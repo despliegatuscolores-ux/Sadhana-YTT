@@ -1,0 +1,1188 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kinesis — Laboratorio Técnico, Anatomía & Secuenciador de Yoga</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-main: #0a0e14;
+      --bg-surface: #111722;
+      --bg-surface-elevated: #182232;
+      --border: #223046;
+      --border-focus: #2dd4bf;
+      --teal: #2dd4bf;
+      --teal-soft: #99f6e4;
+      --teal-dim: rgba(45, 212, 191, 0.12);
+      --amber: #f59e0b;
+      --red: #f87171;
+      --blue: #60a5fa;
+      --purple: #c084fc;
+      --text-main: #e6edf3;
+      --text-muted: #8b9bb4;
+      --font-body: 'Plus Jakarta Sans', sans-serif;
+      --font-serif: 'Playfair Display', serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      --sidebar-w: 290px;
+    }
+
+    [data-theme="light"] {
+      --bg-main: #f8fafc;
+      --bg-surface: #ffffff;
+      --bg-surface-elevated: #f1f5f9;
+      --border: #cbd5e1;
+      --border-focus: #0d9488;
+      --teal: #0d9488;
+      --teal-soft: #115e59;
+      --teal-dim: rgba(13, 148, 136, 0.12);
+      --amber: #d97706;
+      --red: #dc2626;
+      --blue: #2563eb;
+      --purple: #9333ea;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      display: flex;
+      overflow-x: hidden;
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    /* BARRA LATERAL */
+    aside.sidebar {
+      width: var(--sidebar-w);
+      background-color: var(--bg-surface);
+      border-right: 1px solid var(--border);
+      height: 100vh;
+      position: sticky;
+      top: 0;
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      z-index: 50;
+      transition: transform 0.3s ease;
+    }
+
+    .brand-box {
+      padding: 24px;
+      border-bottom: 1px solid var(--border);
+    }
+    .brand-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--teal);
+      text-decoration: none;
+      margin-bottom: 12px;
+    }
+    .brand-title {
+      font-family: var(--font-serif);
+      font-size: 1.45rem;
+      color: var(--teal-soft);
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .brand-subtitle {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-top: 4px;
+    }
+
+    nav.nav-links {
+      flex: 1;
+      padding: 16px 12px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .nav-btn {
+      width: 100%;
+      text-align: left;
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-muted);
+      padding: 11px 14px;
+      border-radius: 8px;
+      font-family: var(--font-body);
+      font-size: 13.5px;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: all 0.2s ease;
+    }
+    .nav-btn:hover {
+      background-color: var(--bg-surface-elevated);
+      color: var(--text-main);
+    }
+    .nav-btn.active {
+      background-color: var(--teal-dim);
+      border-color: rgba(45, 212, 191, 0.35);
+      color: var(--teal);
+      font-weight: 600;
+    }
+    .nav-btn .icon { font-size: 18px; width: 22px; text-align: center; }
+
+    /* CONTENEDOR PRINCIPAL */
+    main.main-viewport {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    header.topbar {
+      height: 70px;
+      border-bottom: 1px solid var(--border);
+      padding: 0 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      background-color: rgba(10, 14, 20, 0.85);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 40;
+    }
+    [data-theme="light"] header.topbar {
+      background-color: rgba(248, 250, 252, 0.9);
+    }
+
+    .search-wrapper {
+      position: relative;
+      flex: 1;
+      max-width: 500px;
+    }
+    .search-input {
+      width: 100%;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 10px 18px 10px 42px;
+      color: var(--text-main);
+      font-family: var(--font-body);
+      font-size: 13.5px;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+    .search-input:focus {
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.15);
+    }
+    .search-icon {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .action-btn {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 8px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 12.5px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .action-btn:hover {
+      color: var(--text-main);
+      border-color: var(--text-muted);
+    }
+
+    /* CONTENIDO DINÁMICO */
+    .content-area {
+      padding: 36px 40px;
+      max-width: 1280px;
+      margin: 0 auto;
+      width: 100%;
+      flex: 1;
+    }
+
+    .section-header {
+      margin-bottom: 28px;
+    }
+    .section-badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--teal);
+      margin-bottom: 8px;
+    }
+    .section-title {
+      font-family: var(--font-serif);
+      font-size: clamp(1.8rem, 3.5vw, 2.3rem);
+      font-weight: 600;
+      color: var(--text-main);
+      line-height: 1.25;
+    }
+    .section-lead {
+      color: var(--text-muted);
+      font-size: 1.05rem;
+      margin-top: 10px;
+      max-width: 860px;
+    }
+
+    /* FILTROS / PILLS */
+    .tab-pills {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 12px;
+      margin-bottom: 24px;
+      border-bottom: 1px solid var(--border);
+    }
+    .pill-btn {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 7px 16px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+    .pill-btn:hover { color: var(--text-main); }
+    .pill-btn.active {
+      background: var(--teal);
+      color: #042f2e;
+      border-color: var(--teal);
+      font-weight: 700;
+    }
+
+    /* GRID & CARDS */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 24px;
+    }
+    .card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 24px;
+      transition: all 0.25s ease;
+      display: flex;
+      flex-direction: column;
+      cursor: pointer;
+    }
+    .card:hover {
+      border-color: rgba(45, 212, 191, 0.4);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px -10px rgba(0,0,0,0.4);
+    }
+    .card-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .badge-family {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      background: var(--teal-dim);
+      color: var(--teal);
+      border: 1px solid rgba(45, 212, 191, 0.25);
+    }
+    .badge-level {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+    .sanskrit-name {
+      font-family: var(--font-serif);
+      font-style: italic;
+      color: var(--teal-soft);
+      font-size: 1.35rem;
+      line-height: 1.3;
+    }
+    .common-name {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text-main);
+      margin-bottom: 14px;
+    }
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: auto;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+    .mini-tag {
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      background: var(--bg-surface-elevated);
+      color: var(--text-muted);
+    }
+
+    /* MODAL DE POSTURA 360 */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 20px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+    .modal-backdrop.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .modal-dialog {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      max-width: 900px;
+      width: 100%;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+    }
+    .modal-header {
+      padding: 24px 28px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      background: var(--bg-surface-elevated);
+    }
+    .modal-close {
+      background: transparent;
+      border: none;
+      font-size: 24px;
+      color: var(--text-muted);
+      cursor: pointer;
+      line-height: 1;
+    }
+    .modal-body {
+      padding: 28px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .modal-tabs {
+      display: flex;
+      gap: 8px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 12px;
+      overflow-x: auto;
+    }
+    .modal-tab-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-muted);
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .modal-tab-btn.active {
+      background: var(--teal-dim);
+      border-color: rgba(45, 212, 191, 0.35);
+      color: var(--teal);
+    }
+
+    /* PACER DE PRANAYAMA & AUDIO */
+    .pacer-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      margin-bottom: 32px;
+      text-align: center;
+    }
+    .orb-stage {
+      position: relative;
+      width: 240px;
+      height: 240px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 24px 0;
+    }
+    .breathing-orb {
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      background: radial-gradient(circle, var(--teal) 0%, rgba(45, 212, 191, 0.2) 70%, transparent 100%);
+      box-shadow: 0 0 35px rgba(45, 212, 191, 0.3);
+      transition: transform 4s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .orb-label {
+      font-family: var(--font-mono);
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #fff;
+    }
+    .pacer-phase {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--teal);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    .pacer-hint {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+    .pacer-controls {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .btn-ctl {
+      background: var(--teal);
+      color: #042f2e;
+      border: none;
+      font-weight: 700;
+      padding: 10px 24px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+    .btn-ctl:hover {
+      transform: scale(1.03);
+      box-shadow: 0 4px 16px rgba(45, 212, 191, 0.4);
+    }
+    .btn-ctl-secondary {
+      background: var(--bg-surface-elevated);
+      color: var(--text-main);
+      border: 1px solid var(--border);
+    }
+
+    /* SECUENCIADOR DE CLASES */
+    .sequencer-layout {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 28px;
+    }
+    .sequence-board {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 24px;
+      min-height: 500px;
+      display: flex;
+      flex-direction: column;
+    }
+    .sequence-sidebar {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 24px;
+      height: fit-content;
+      position: sticky;
+      top: 90px;
+    }
+    .seq-item {
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      transition: border-color 0.2s;
+    }
+    .seq-item:hover { border-color: var(--teal); }
+    .seq-item-info { flex: 1; }
+    .seq-item-title { font-weight: 600; font-size: 14px; }
+    .seq-item-sub { font-size: 12px; color: var(--text-muted); }
+    .seq-item-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .seq-btn {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+    }
+    .seq-btn:hover { color: var(--text-main); border-color: var(--text-muted); }
+
+    /* MODO MÓVIL */
+    .menu-toggle {
+      display: none;
+      background: transparent;
+      border: none;
+      color: var(--text-main);
+      font-size: 24px;
+      cursor: pointer;
+    }
+
+    @media (max-width: 980px) {
+      aside.sidebar {
+        position: fixed;
+        left: 0;
+        transform: translateX(-100%);
+      }
+      aside.sidebar.open {
+        transform: translateX(0);
+      }
+      .menu-toggle { display: block; }
+      .content-area { padding: 24px 16px; }
+      header.topbar { padding: 0 16px; }
+      .sequencer-layout { grid-template-columns: 1fr; }
+      .sequence-sidebar { position: static; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- BARRA LATERAL -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand-box">
+      <a href="../" class="brand-back">← Volver al Menú</a>
+      <div class="brand-title">⚡ KINESIS</div>
+      <div class="brand-subtitle">Laboratorio Técnico & Aula</div>
+    </div>
+    <nav class="nav-links">
+      <button class="nav-btn active" data-view="asanas">
+        <span class="icon">🧘</span> Asana Lab (Catálogo 360°)
+      </button>
+      <button class="nav-btn" data-view="anatomia">
+        <span class="icon">🦴</span> Biomecánica & Articulaciones
+      </button>
+      <button class="nav-btn" data-view="pranayama">
+        <span class="icon">🌬️</span> Pranayama & Pacer Audio
+      </button>
+      <button class="nav-btn" data-view="terapia">
+        <span class="icon">🩹</span> Yoga Terapéutico & Patologías
+      </button>
+      <button class="nav-btn" data-view="secuenciador">
+        <span class="icon">📋</span> Secuenciador de Clases
+      </button>
+      <button class="nav-btn" data-view="pedagogia">
+        <span class="icon">🎓</span> Pedagogía & Ética Docente
+      </button>
+    </nav>
+  </aside>
+
+  <!-- CONTENEDOR CENTRAL -->
+  <main class="main-viewport">
+    <header class="topbar">
+      <button class="menu-toggle" id="menuToggle" aria-label="Abrir menú">☰</button>
+      <div class="search-wrapper">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="globalSearch" class="search-input" placeholder="Buscar asana, músculo, lesión, respiración...">
+      </div>
+      <div class="top-actions">
+        <button class="action-btn" id="themeBtn">🌓 Tema Claro</button>
+      </div>
+    </header>
+
+    <div class="content-area" id="contentArea">
+      <!-- Inyectado dinámicamente con JS -->
+    </div>
+  </main>
+
+  <!-- MODAL DE ASANA 360 -->
+  <div class="modal-backdrop" id="asanaModal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div>
+          <span class="badge-family" id="modalFamily">Familia</span>
+          <h2 class="sanskrit-name" id="modalSanskrit" style="font-size: 1.6rem; margin-top: 4px;">Nombre</h2>
+          <div class="common-name" id="modalCommon" style="margin-bottom: 0;">Traducción</div>
+        </div>
+        <button class="modal-close" onclick="closeModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-tabs">
+          <button class="modal-tab-btn active" onclick="switchModalTab('alineacion')">Alineación Clave</button>
+          <button class="modal-tab-btn" onclick="switchModalTab('biomecanica')">Biomecánica Activa</button>
+          <button class="modal-tab-btn" onclick="switchModalTab('ajustes')">Ajustes & Props</button>
+          <button class="modal-tab-btn" onclick="switchModalTab('terapia')">Contraindicaciones</button>
+          <button class="modal-tab-btn" onclick="switchModalTab('guion')">Instrucción Verbal</button>
+        </div>
+        <div id="modalTabContent" style="font-size: 14px; line-height: 1.7;">
+          <!-- Contenido dinámico de pestañas del modal -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CARGA DE BASE DE DATOS Y MOTOR -->
+  <script src="data-practica.js"></script>
+  <script>
+    let currentView = 'asanas';
+    let activeFamily = 'todas';
+    let activeAsanaModal = null;
+    let activeModalSubTab = 'alineacion';
+
+    // Estado del secuenciador
+    let currentSequence = JSON.parse(localStorage.getItem('kinesis_seq') || '[]');
+
+    // Estado del Pranayama Pacer & Web Audio API
+    let pacerInterval = null;
+    let pacerRunning = false;
+    let audioCtx = null;
+
+    const sidebar = document.getElementById('sidebar');
+    const menuToggle = document.getElementById('menuToggle');
+    const contentArea = document.getElementById('contentArea');
+    const globalSearch = document.getElementById('globalSearch');
+    const themeBtn = document.getElementById('themeBtn');
+
+    // Tema Claro / Oscuro
+    themeBtn.addEventListener('click', () => {
+      const isLight = document.body.getAttribute('data-theme') === 'light';
+      if (isLight) {
+        document.body.removeAttribute('data-theme');
+        themeBtn.textContent = '🌓 Tema Claro';
+      } else {
+        document.body.setAttribute('data-theme', 'light');
+        themeBtn.textContent = '🌑 Tema Oscuro';
+      }
+    });
+
+    menuToggle.addEventListener('click', () => sidebar.classList.toggle('open'));
+
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentView = btn.getAttribute('data-view');
+        globalSearch.value = '';
+        stopPacer();
+        renderCurrentView();
+        sidebar.classList.remove('open');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    });
+
+    // Renderizador de Vistas
+    function renderCurrentView() {
+      if (typeof PRACTICA_DB === 'undefined') {
+        contentArea.innerHTML = `
+          <div style="background: rgba(45, 212, 191, 0.08); border: 1px dashed var(--teal); padding: 32px; border-radius: 12px; text-align: center;">
+            <h2 style="font-family: var(--font-serif); color: var(--teal-soft); margin-bottom: 12px;">Cargando Base de Datos Técnica...</h2>
+            <p style="color: var(--text-muted);">Crea el archivo <code>practica/data-practica.js</code> en tu repositorio para habilitar el laboratorio técnico, catálogo de asanas y secuenciador.</p>
+          </div>
+        `;
+        return;
+      }
+
+      switch (currentView) {
+        case 'asanas': renderAsanas(); break;
+        case 'anatomia': renderAnatomia(); break;
+        case 'pranayama': renderPranayama(); break;
+        case 'terapia': renderTerapia(); break;
+        case 'secuenciador': renderSecuenciador(); break;
+        case 'pedagogia': renderPedagogia(); break;
+      }
+    }
+
+    /* 1. ASANA LAB */
+    function renderAsanas() {
+      const asanas = PRACTICA_DB.asanas;
+      const familias = ['todas', 'de pie', 'flexión', 'extensión', 'torsión', 'caderas', 'inversión', 'equilibrio brazos', 'restaurativa'];
+
+      const filtradas = activeFamily === 'todas' 
+        ? asanas 
+        : asanas.filter(a => a.familia.toLowerCase() === activeFamily.toLowerCase());
+
+      contentArea.innerHTML = `
+        <div class="section-header">
+          <span class="section-badge">Bloque 3: Asana Lab 360°</span>
+          <h1 class="section-title">Laboratorio Anatómico de Asanas</h1>
+          <p class="section-lead">Estudio dimensional de alineación, vectores de fuerza agonista/antagonista, asistencia manual segura y adaptaciones con props.</p>
+        </div>
+
+        <div class="tab-pills">
+          ${familias.map(f => `
+            <button class="pill-btn ${activeFamily === f ? 'active' : ''}" onclick="setFamilyFilter('${f}')">
+              ${f.charAt(0).toUpperCase() + f.slice(1)}
+            </button>
+          `).join('')}
+        </div>
+
+        <div class="cards-grid">
+          ${filtradas.map(a => `
+            <div class="card" onclick="openModal('${a.id}')">
+              <div class="card-meta">
+                <span class="badge-family">${a.familia}</span>
+                <span class="badge-level">${a.nivel} • ${a.drishti}</span>
+              </div>
+              <div class="sanskrit-name">${a.sanscrito}</div>
+              <div class="common-name">${a.espanol}</div>
+              <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.5;">
+                ${a.esencia}
+              </p>
+              <div class="tag-row">
+                <span class="mini-tag">Activa: ${a.musculosActivos[0]}</span>
+                <span class="mini-tag">Elonga: ${a.musculosElongados[0]}</span>
+                <button onclick="event.stopPropagation(); addToSeq('${a.id}')" style="margin-left: auto; background: var(--teal-dim); border: 1px solid var(--teal); color: var(--teal); border-radius: 4px; padding: 2px 8px; font-size: 11px; cursor: pointer; font-weight: 700;">+ Secuencia</button>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    window.setFamilyFilter = function(fam) {
+      activeFamily = fam;
+      renderAsanas();
+    };
+
+    /* MODAL 360 LOGIC */
+    window.openModal = function(id) {
+      const a = PRACTICA_DB.asanas.find(x => x.id === id);
+      if (!a) return;
+      activeAsanaModal = a;
+      activeModalSubTab = 'alineacion';
+
+      document.getElementById('modalFamily').textContent = a.familia;
+      document.getElementById('modalSanskrit').textContent = a.sanscrito;
+      document.getElementById('modalCommon').textContent = `${a.espanol} (${a.traduccionEtimologica})`;
+      renderModalTabContent();
+      document.getElementById('asanaModal').classList.add('open');
+    };
+
+    window.closeModal = function() {
+      document.getElementById('asanaModal').classList.remove('open');
+    };
+
+    window.switchModalTab = function(tab) {
+      activeModalSubTab = tab;
+      document.querySelectorAll('.modal-tab-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('onclick').includes(tab));
+      });
+      renderModalTabContent();
+    };
+
+    function renderModalTabContent() {
+      const a = activeAsanaModal;
+      const c = document.getElementById('modalTabContent');
+      if (!a) return;
+
+      if (activeModalSubTab === 'alineacion') {
+        c.innerHTML = `
+          <h4 style="color: var(--teal); margin-bottom: 8px;">Puntos Clave de Alineación (De la base a la coronilla):</h4>
+          <ol style="padding-left: 20px; margin-bottom: 16px;">
+            ${a.alineacionPasoAPaso.map(step => `<li style="margin-bottom: 6px;">${step}</li>`).join('')}
+          </ol>
+          <div style="background: var(--bg-surface-elevated); padding: 12px; border-radius: 8px; border-left: 3px solid var(--amber);">
+            <strong style="color: var(--amber);">Punto Ciego / Error Habitual:</strong> ${a.errorComun}
+          </div>
+        `;
+      } else if (activeModalSubTab === 'biomecanica') {
+        c.innerHTML = `
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+            <div style="background: var(--bg-surface-elevated); padding: 14px; border-radius: 8px;">
+              <strong style="color: var(--teal);">Músculos Motores / Activos:</strong>
+              <ul style="padding-left: 18px; margin-top: 6px; font-size: 13px;">
+                ${a.musculosActivos.map(m => `<li>${m}</li>`).join('')}
+              </ul>
+            </div>
+            <div style="background: var(--bg-surface-elevated); padding: 14px; border-radius: 8px;">
+              <strong style="color: var(--blue);">Músculos Elongados / Antagonistas:</strong>
+              <ul style="padding-left: 18px; margin-top: 6px; font-size: 13px;">
+                ${a.musculosElongados.map(m => `<li>${m}</li>`).join('')}
+              </ul>
+            </div>
+          </div>
+          <p><strong>Mecánica Articular Principal:</strong> ${a.mecanicaArticular}</p>
+        `;
+      } else if (activeModalSubTab === 'ajustes') {
+        c.innerHTML = `
+          <h4 style="color: var(--teal); margin-bottom: 8px;">El Arte de Asistir al Alumno:</h4>
+          <p style="margin-bottom: 12px;"><strong>Ajuste Táctil Seguro:</strong> ${a.ajusteManual}</p>
+          <div style="background: var(--bg-surface-elevated); padding: 14px; border-radius: 8px;">
+            <strong style="color: var(--teal-soft);">Adaptaciones y Soportes (Props):</strong>
+            <ul style="padding-left: 18px; margin-top: 6px;">
+              ${a.variantesProps.map(v => `<li>${v}</li>`).join('')}
+            </ul>
+          </div>
+        `;
+      } else if (activeModalSubTab === 'terapia') {
+        c.innerHTML = `
+          <div style="background: rgba(248, 113, 113, 0.1); border: 1px solid var(--red); padding: 14px; border-radius: 8px; margin-bottom: 16px;">
+            <strong style="color: var(--red);">Contraindicaciones Absolutas y Relativas:</strong>
+            <p style="margin-top: 6px;">${a.contraindicaciones}</p>
+          </div>
+          <p><strong>Consideración Especial:</strong> ${a.consideracionTerapeutica}</p>
+        `;
+      } else if (activeModalSubTab === 'guion') {
+        c.innerHTML = `
+          <h4 style="color: var(--teal); margin-bottom: 8px;">Comandos Verbales de Entrada y Mantenimiento:</h4>
+          <div style="font-family: var(--font-serif); font-style: italic; background: var(--bg-surface-elevated); padding: 16px; border-radius: 8px; font-size: 15px; color: var(--teal-soft);">
+            "${a.guionVerbal}"
+          </div>
+        `;
+      }
+    }
+
+    /* 2. BIOMECÁNICA & ANATOMÍA */
+    function renderAnatomia() {
+      const bio = PRACTICA_DB.biomecanica;
+      contentArea.innerHTML = `
+        <div class="section-header">
+          <span class="section-badge">Bloque 2: Anatomía Aplicada</span>
+          <h1 class="section-title">Biomecánica & Cadenas Miofasciales</h1>
+          <p class="section-lead">Comprensión profunda de la arquitectura ósea, rangos de movimiento articular y la mecánica del diafragma en la práctica física.</p>
+        </div>
+        <div class="cards-grid">
+          ${bio.map(b => `
+            <div class="card" style="cursor: default;">
+              <div class="card-meta">
+                <span class="badge-family">${b.complejoArticular}</span>
+                <span class="badge-level">${b.movimientosClave}</span>
+              </div>
+              <h2 style="font-size: 1.25rem; font-weight: 600; color: var(--teal-soft); margin-bottom: 8px;">${b.nombre}</h2>
+              <p style="font-size: 13.5px; color: var(--text-muted); margin-bottom: 14px;">${b.descripcion}</p>
+              <div style="background: var(--bg-surface-elevated); padding: 12px; border-radius: 8px; font-size: 13px; margin-bottom: 10px;">
+                <strong style="color: var(--teal);">Riesgo / Lesión Típica en Yoga:</strong>
+                <p style="margin-top: 4px;">${b.riesgoEnEsterilla}</p>
+              </div>
+              <p style="font-size: 12.5px; color: var(--text-main);">
+                <strong>Estrategia Preventiva:</strong> ${b.estrategiaProteccion}
+              </p>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    /* 3. PRANAYAMA & PACER CON SONIDO (WEB AUDIO API) */
+    function playBowlTone(freq = 432) {
+      try {
+        if (!audioCtx) {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+
+        gain.gain.setValueAtTime(0.001, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.2, audioCtx.currentTime + 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 3.0);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        osc.start();
+        osc.stop(audioCtx.currentTime + 3.0);
+      } catch (err) {
+        console.log('Audio disabled or not supported yet');
+      }
+    }
+
+    function renderPranayama() {
+      const pranas = PRACTICA_DB.pranayamas;
+      contentArea.innerHTML = `
+        <div class="section-header">
+          <span class="section-badge">Bloque 4: Fisiología de la Respiración</span>
+          <h1 class="section-title">Pranayama, Mudras & Kriyas</h1>
+          <p class="section-lead">Entrenador rítmico con pacer visual y síntesis sonora de armónicos de cuenco tibetano para regular el sistema nervioso autónomo.</p>
+        </div>
+
+        <div class="pacer-container">
+          <div class="pacer-phase" id="pacerPhase">En Reposo</div>
+          <div class="orb-stage">
+            <div class="breathing-orb" id="breathingOrb">
+              <span class="orb-label" id="orbLabel">--</span>
+            </div>
+          </div>
+          <div class="pacer-hint" id="pacerHint">Selecciona un ritmo respiratorio y pulsa iniciar</div>
+          <div class="pacer-controls">
+            <button class="btn-ctl" id="startPacerBtn" onclick="togglePacer()">Iniciar Respiración</button>
+            <button class="btn-ctl btn-ctl-secondary" onclick="setPacerPattern('box')">Sama Vritti (4-4-4-4)</button>
+            <button class="btn-ctl btn-ctl-secondary" onclick="setPacerPattern('relax')">Relax (4-7-8)</button>
+            <button class="btn-ctl btn-ctl-secondary" onclick="setPacerPattern('calm')">Calma (4-0-6-0)</button>
+          </div>
+        </div>
+
+        <h3 style="font-size: 1.3rem; margin-bottom: 16px; color: var(--teal-soft);">Técnicas Canónicas de Pranayama</h3>
+        <div class="cards-grid">
+          ${pranas.map(p => `
+            <div class="card" style="cursor: default;">
+              <div class="card-meta">
+                <span class="badge-family">${p.categoria}</span>
+                <span class="badge-level">Ratio: ${p.ratio}</span>
+              </div>
+              <h2 style="font-size: 1.25rem; font-weight: 600; color: var(--teal-soft); margin-bottom: 4px;">${p.sanscrito}</h2>
+              <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">${p.espanol}</div>
+              <p style="font-size: 13.5px; color: var(--text-muted); margin-bottom: 12px;">${p.mecanismoFisiologico}</p>
+              <div style="background: var(--bg-surface-elevated); padding: 12px; border-radius: 8px; font-size: 12.5px; margin-bottom: 8px;">
+                <strong>Instrucción Técnica:</strong> ${p.comoEjecutar}
+              </div>
+              <div style="font-size: 12px; color: var(--red);">
+                <strong>Contraindicación:</strong> ${p.contraindicaciones}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    let currentPattern = { in: 4, hold1: 4, out: 4, hold2: 4, name: 'Sama Vritti' };
+
+    window.setPacerPattern = function(type) {
+      stopPacer();
+      if (type === 'box') currentPattern = { in: 4, hold1: 4, out: 4, hold2: 4, name: 'Sama Vritti (Caja 4-4-4-4)' };
+      if (type === 'relax') currentPattern = { in: 4, hold1: 7, out: 8, hold2: 0, name: 'Respiración Sedante (4-7-8)' };
+      if (type === 'calm') currentPattern = { in: 4, hold1: 0, out: 6, hold2: 0, name: 'Equilibrante (4-0-6-0)' };
+      document.getElementById('pacerHint').textContent = `Patrón configurado: ${currentPattern.name}`;
+    };
+
+    window.togglePacer = function() {
+      if (pacerRunning) {
+        stopPacer();
+      } else {
+        startPacer();
+      }
+    };
+
+    function startPacer() {
+      pacerRunning = true;
+      document.getElementById('startPacerBtn').textContent = 'Pausar';
+      runPacerCycle();
+    }
+
+    function stopPacer() {
+      pacerRunning = false;
+      clearTimeout(pacerInterval);
+      const orb = document.getElementById('breathingOrb');
+      const phase = document.getElementById('pacerPhase');
+      const label = document.getElementById('orbLabel');
+      const btn = document.getElementById('startPacerBtn');
+      if (orb) orb.style.transform = 'scale(1)';
+      if (phase) phase.textContent = 'En Pausa';
+      if (label) label.textContent = '--';
+      if (btn) btn.textContent = 'Iniciar Respiración';
+    }
+
+    function runPacerCycle() {
+      if (!pacerRunning) return;
+
+      const orb = document.getElementById('breathingOrb');
+      const phase = document.getElementById('pacerPhase');
+      const label = document.getElementById('orbLabel');
+
+      // 1. Inhala
+      phase.textContent = 'Inhala';
+      label.textContent = currentPattern.in;
+      orb.style.transition = `transform ${currentPattern.in}s cubic-bezier(0.4, 0, 0.2, 1)`;
+      orb.style.transform = 'scale(1.9)';
+      playBowlTone(528);
+
+      pacerInterval = setTimeout(() => {
+        if (!pacerRunning) return;
+        // 2. Retén lleno (si existe)
+        if (currentPattern.hold1 > 0) {
+          phase.textContent = 'Retén con Aire (Kumbhaka)';
+          label.textContent = currentPattern.hold1;
+          pacerInterval = setTimeout(doExhale, currentPattern.hold1 * 1000);
+        } else {
+          doExhale();
+        }
+      }, currentPattern.in * 1000);
+
+      function doExhale() {
+        if (!pacerRunning) return;
+        // 3. Exhala
+        phase.textContent = 'Exhala Lentamente';
+        label.textContent = currentPattern.out;
+        orb.style.transition = `transform ${currentPattern.out}s cubic-bezier(0.4, 0, 0.2, 1)`;
+        orb.style.transform = 'scale(1)';
+        playBowlTone(396);
+
+        pacerInterval = setTimeout(() => {
+          if (!pacerRunning) return;
+          // 4. Retén vacío (si existe)
+          if (currentPattern.hold2 > 0) {
+            phase.textContent = 'Retén en Vacío (Sunyaka)';
+            label.textContent = currentPattern.hold2;
+            pacerInterval = setTimeout(runPacerCycle, currentPattern.hold2 * 1000);
+          } else {
+            runPacerCycle();
+          }
+        }, currentPattern.out * 1000);
+      }
+    }
+
+    /* 4. TERAPIA & PATOLOGÍAS */
+    function renderTerapia() {
+      const ter = PRACTICA_DB.terapia;
+      contentArea.innerHTML = `
+        <div class="section-header">
+          <span class="section-badge">Bloque 5: Yoga Terapéutico</span>
+          <h1 class="section-title">Protocolos Clínicos, Lesiones & Embarazo</h1>
+          <p class="section-lead">Pautas de adaptación postural, precauciones anatómicas y variantes para acompañar alumnos con patologías frecuentes en clase.</p>
+        </div>
+        <div class="cards-grid">
+          ${ter.map(t => `
+            <div class="card" style="cursor: default;">
+              <div class="card-meta">
+                <span class="badge-family">${t.zonaOPerfil}</span>
+                <span class="badge-level">${t.frecuencia}</span>
+              </div>
+              <h2 style="font-size: 1.25rem; font-weight: 600; color: var(--teal-soft); margin-bottom: 8px;">${t.patologia}</h2>
+              <p style="font-size: 13.5px; color: var(--text-muted); margin-bottom: 12px;">${t.mecanismoLesion}</p>
+              
+              <div style="background: rgba(248, 113, 113, 0.1); border: 1px solid var(--red); padding: 12px; border-radius: 8px; margin-bottom: 10px; font-size: 13px;">
+                <strong style="color: var(--red);">Contraindicación Estricta:</strong>
+                <p style="margin-top: 4px;">${t.posturasProhibidas}</p>
+              </div>
+
+              <div style="background: var(--bg-surface-elevated); padding: 12px; border-radius: 8px; font-size: 13px;">
+                <strong style="color: var(--teal);">Adaptaciones & Asanas Terapéuticas:</strong>
+                <p style="margin-top: 4px;">${t.posturasSagradasYAdaptaciones}</p>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    /* 5. SECUENCIADOR DE CLASES */
+    function renderSecuenciador() {
+      const totalMinutes = currentSequence.reduce((acc, curr) => acc + (curr.duracionMin || 2), 0);
+
+      contentArea.innerHTML = `
+        <div class="section-header">
+          <span class="section-badge">Bloque 6: Vinyasa Krama</span>
+          <h1 class="section-title">Constructor & Secuenciador de Clases</h1>
+          <p class="section-lead">Diseña clases equilibradas calculando la curva de intensidad energética, tiempos de permanencia y balance anatómico.</p>
+        </div>
+
+        <div class="sequencer-layout">
+          <div class="sequence-board">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+              <h3 style="font-size: 1.2rem; color: var(--teal-soft);">Estructura de la Sesión (${currentSequence.length} asanas)</h3>
+              <span style="font-size: 13px; font-weight: 700; color: var(--teal); background: var(--teal-dim); padding: 4px 12px; border-radius: 999px;">
+                Tiempo Estimado: ~${totalMinutes} min
+              </span>
+            </div>
+
+            <div id="seqList">
+              ${currentSequence.length === 0 ? `
+                <div style="text-align: center; padding: 60px 20px; color: var(--text-muted);">
+                  <div style="font-size: 40px; margin-bottom: 12px;">🧘</div>
+                  <p>Tu secuencia está vacía.</p>
+                  <p style="font-size: 13px; margin-top: 6px;">Ve a la pestaña <strong>Asana Lab</strong> y pulsa <em>"+ Secuencia"</em> en cualquier postura, o carga una plantilla rápida.</p>
+                </div>
+              ` : currentSequence.map((item, idx) => `
+                <div class="seq-item">
+                  <span style="font-size: 12px; font-weight: 700; color: var(--teal); width: 22px;">#${idx + 1}</span>
+                  <div class="seq-item-info">
+                    <div class="seq-item-title">${item.sanscrito}</div>
+                    <div class="seq-item-sub">${item.espanol} •${item.familia}</div>
+                  </div>
+                  <div class="seq-item-actions">
+                    <button class="seq-btn" onclick="moveSeqItem(${idx}, -1)">↑</button>
+                    <button class="seq-btn" onclick="moveSeqItem(${idx}, 1)">↓</button>
+                    <button class="seq-btn" style="color: var(--red);" onclick="removeSeqItem(${idx})">×</button>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+
+            <div style="margin-top: auto; padding-top: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
+              <button class="btn-ctl" onclick="exportSequence()">Copiar Secuencia al Portapapeles</button>
+              <button class="btn-ctl btn-ctl-secondary" onclick="clearSequence()">Limpiar</button>
+            </div>
+          </div>
+
+          <div class="sequence-sidebar">
+            <h4 style="font-size: 1.05rem; color: var(--teal-soft); margin-bottom: 12px;">Plantillas Pedagógicas</h4>
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+              <button class="pill-btn" onclick="loadTemplate('enraizamiento')" style="text-align: left; border-radius: 8px;">
+                🌲 Hatha Enraizamiento & Pie (45m)
+              </button>
+              <button class="pill-btn" onclick="loadTemplate('pecho')" style="text-align: left; border-radius: 8px;">
+                🏹 Vinyasa Apertura de Pecho (60m)
+              </button>
+              <button class="pill-btn" onclick="loadTemplate('terapeutica')" style="text-align: left; border-radius: 8px;">
+                🩹 Terapéutica Lumbar & Core (40m)
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    window.addToSeq = function
