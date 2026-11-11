@@ -648,9 +648,7 @@
       </div>
     </header>
 
-    <div class="content-area" id="contentArea">
-      <!-- Inyectado dinámicamente con JS -->
-    </div>
+    <div class="content-area" id="contentArea"></div>
   </main>
 
   <!-- MODAL DE ASANA 360 -->
@@ -672,9 +670,7 @@
           <button class="modal-tab-btn" onclick="switchModalTab('terapia')">Contraindicaciones</button>
           <button class="modal-tab-btn" onclick="switchModalTab('guion')">Instrucción Verbal</button>
         </div>
-        <div id="modalTabContent" style="font-size: 14px; line-height: 1.7;">
-          <!-- Contenido dinámico de pestañas del modal -->
-        </div>
+        <div id="modalTabContent" style="font-size: 14px; line-height: 1.7;"></div>
       </div>
     </div>
   </div>
@@ -734,7 +730,7 @@
         contentArea.innerHTML = `
           <div style="background: rgba(45, 212, 191, 0.08); border: 1px dashed var(--teal); padding: 32px; border-radius: 12px; text-align: center;">
             <h2 style="font-family: var(--font-serif); color: var(--teal-soft); margin-bottom: 12px;">Cargando Base de Datos Técnica...</h2>
-            <p style="color: var(--text-muted);">Crea el archivo <code>practica/data-practica.js</code> en tu repositorio para habilitar el laboratorio técnico, catálogo de asanas y secuenciador.</p>
+            <p style="color: var(--text-muted);">Comprueba que el archivo <code>practica/data-practica.js</code> se encuentre en tu repositorio con los datos válidos.</p>
           </div>
         `;
         return;
@@ -1051,7 +1047,7 @@
 
       pacerInterval = setTimeout(() => {
         if (!pacerRunning) return;
-        // 2. Retén lleno (si existe)
+        // 2. Retén lleno
         if (currentPattern.hold1 > 0) {
           phase.textContent = 'Retén con Aire (Kumbhaka)';
           label.textContent = currentPattern.hold1;
@@ -1072,7 +1068,7 @@
 
         pacerInterval = setTimeout(() => {
           if (!pacerRunning) return;
-          // 4. Retén vacío (si existe)
+          // 4. Retén vacío
           if (currentPattern.hold2 > 0) {
             phase.textContent = 'Retén en Vacío (Sunyaka)';
             label.textContent = currentPattern.hold2;
@@ -1150,7 +1146,7 @@
                   <span style="font-size: 12px; font-weight: 700; color: var(--teal); width: 22px;">#${idx + 1}</span>
                   <div class="seq-item-info">
                     <div class="seq-item-title">${item.sanscrito}</div>
-                    <div class="seq-item-sub">${item.espanol} •${item.familia}</div>
+                    <div class="seq-item-sub">${item.espanol} • ${item.familia}</div>
                   </div>
                   <div class="seq-item-actions">
                     <button class="seq-btn" onclick="moveSeqItem(${idx}, -1)">↑</button>
@@ -1185,4 +1181,139 @@
       `;
     }
 
-    window.addToSeq = function
+    window.addToSeq = function(id) {
+      const a = PRACTICA_DB.asanas.find(x => x.id === id);
+      if (!a) return;
+      currentSequence.push({
+        id: a.id,
+        sanscrito: a.sanscrito,
+        espanol: a.espanol,
+        familia: a.familia,
+        duracionMin: 3
+      });
+      localStorage.setItem('kinesis_seq', JSON.stringify(currentSequence));
+      alert(`Postura añadida a la secuencia: ${a.sanscrito}`);
+    };
+
+    window.moveSeqItem = function(idx, dir) {
+      const target = idx + dir;
+      if (target < 0 || target >= currentSequence.length) return;
+      const temp = currentSequence[idx];
+      currentSequence[idx] = currentSequence[target];
+      currentSequence[target] = temp;
+      localStorage.setItem('kinesis_seq', JSON.stringify(currentSequence));
+      renderSecuenciador();
+    };
+
+    window.removeSeqItem = function(idx) {
+      currentSequence.splice(idx, 1);
+      localStorage.setItem('kinesis_seq', JSON.stringify(currentSequence));
+      renderSecuenciador();
+    };
+
+    window.clearSequence = function() {
+      if (confirm('¿Vaciar toda la secuencia?')) {
+        currentSequence = [];
+        localStorage.removeItem('kinesis_seq');
+        renderSecuenciador();
+      }
+    };
+
+    window.loadTemplate = function(type) {
+      if (PRACTICA_DB.plantillas && PRACTICA_DB.plantillas[type]) {
+        currentSequence = [...PRACTICA_DB.plantillas[type]];
+        localStorage.setItem('kinesis_seq', JSON.stringify(currentSequence));
+        renderSecuenciador();
+      }
+    };
+
+    window.exportSequence = function() {
+      if (currentSequence.length === 0) {
+        alert('Añade primero algunas asanas a la secuencia.');
+        return;
+      }
+      let text = `GUIÓN DE CLASE DE YOGA (Vinyasa Krama)\n`;
+      text += `Total Posturas: ${currentSequence.length}\n`;
+      text += `--------------------------------------------------\n`;
+      currentSequence.forEach((item, idx) => {
+        text += `${idx + 1}. ${item.sanscrito} (${item.espanol}) - [${item.familia}]\n`;
+      });
+      navigator.clipboard.writeText(text).then(() => {
+        alert('¡Secuencia copiada al portapapeles!');
+      });
+    };
+
+    /* 6. PEDAGOGÍA & ÉTICA */
+    function renderPedagogia() {
+      const ped = PRACTICA_DB.pedagogia;
+      contentArea.innerHTML = `
+        <div class="section-header">
+          <span class="section-badge">Bloque 6: Formación Docente</span>
+          <h1 class="section-title">Metodología de Aula, Ética & Marketing</h1>
+          <p class="section-lead">Estructura del Vinyasa Krama, modulación de la voz, límites éticos del contacto físico y gestión profesional de la enseñanza.</p>
+        </div>
+        <div class="cards-grid">
+          ${ped.map(p => `
+            <div class="card" style="cursor: default;">
+              <div class="card-meta">
+                <span class="badge-family">${p.area}</span>
+              </div>
+              <h2 style="font-size: 1.25rem; font-weight: 600; color: var(--teal-soft); margin-bottom: 8px;">${p.titulo}</h2>
+              <p style="font-size: 13.5px; color: var(--text-muted); margin-bottom: 12px;">${p.descripcion}</p>
+              <ul style="padding-left: 18px; font-size: 13px; line-height: 1.6;">
+                ${p.puntosClave.map(pt => `<li style="margin-bottom: 6px;">${pt}</li>`).join('')}
+              </ul>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    // Búsqueda en tiempo real
+    globalSearch.addEventListener('input', (e) => {
+      const q = e.target.value.toLowerCase().trim();
+      if (!q) {
+        renderCurrentView();
+        return;
+      }
+      if (typeof PRACTICA_DB === 'undefined') return;
+
+      const resultados = PRACTICA_DB.asanas.filter(a => 
+        a.sanscrito.toLowerCase().includes(q) ||
+        a.espanol.toLowerCase().includes(q) ||
+        a.musculosActivos.some(m => m.toLowerCase().includes(q)) ||
+        a.contraindicaciones.toLowerCase().includes(q)
+      );
+
+      contentArea.innerHTML = `
+        <div class="section-header">
+          <span class="section-badge">Resultados de búsqueda</span>
+          <h1 class="section-title">Coincidencias técnicas para "${e.target.value}"</h1>
+          <p class="section-lead">Se han encontrado ${resultados.length} asanas o términos anatómicos.</p>
+        </div>
+        <div class="cards-grid">
+          ${resultados.length === 0 ? '<p style="color: var(--text-muted);">No se encontraron coincidencias.</p>' : ''}
+          ${resultados.map(a => `
+            <div class="card" onclick="openModal('${a.id}')">
+              <div class="card-meta">
+                <span class="badge-family">${a.familia}</span>
+                <span class="badge-level">${a.nivel}</span>
+              </div>
+              <div class="sanskrit-name">${a.sanscrito}</div>
+              <div class="common-name">${a.espanol}</div>
+              <p style="font-size: 13px; color: var(--text-muted);">${a.esencia}</p>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    });
+
+    // Carga inicial segura
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', renderCurrentView);
+    } else {
+      renderCurrentView();
+    }
+  </script>
+</body>
+</html>
