@@ -839,6 +839,7 @@ const PRACTICA_DB = {
       consideracionTerapeutica: "Excelente fortalecimiento del complejo del hombro y del core lateral, muy útil para estabilizar la columna en escoliosis.",
       guionVerbal: "Empuja la tierra con la mano de base; eleva las caderas y proyecta tu pecho hacia el lateral."
     },
+    
     /* ==========================================================
        FAMILIA: YIN YOGA (Fascial, Meridianos & Permanencia 3-5 min)
        ========================================================== */
