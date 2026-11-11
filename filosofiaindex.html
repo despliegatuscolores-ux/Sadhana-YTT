@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Darshana — Enciclopedia de Filosofía e Historia del Yoga</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Cinzel:wght@500;600;700;800&family=Playfair+Display:ital,wght@0,500;0,600;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-main: #0c0f14;
+      --bg-surface: #141922;
+      --bg-surface-elevated: #1a2230;
+      --border: #242e40;
+      --border-focus: #d4af37;
+      --gold: #d4af37;
+      --gold-soft: #ecd99f;
+      --gold-dim: rgba(212, 175, 55, 0.12);
+      --sanskrit: #f7a072;
+      --text-main: #e6edf3;
+      --text-muted: #8b9bb4;
+      --font-body: 'Plus Jakarta Sans', sans-serif;
+      --font-serif: 'Playfair Display', serif;
+      --font-title: 'Cinzel', serif;
+      --sidebar-w: 290px;
+    }
+
+    [data-theme="sepia"] {
+      --bg-main: #fbf7ee;
+      --bg-surface: #f2ebd9;
+      --bg-surface-elevated: #e6ddc4;
+      --border: #d5c8a8;
+      --border-focus: #9e782f;
+      --gold: #9e782f;
+      --gold-soft: #6d521d;
+      --gold-dim: rgba(158, 120, 47, 0.12);
+      --sanskrit: #a84218;
+      --text-main: #2b261f;
+      --text-muted: #6b6355;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      display: flex;
+      overflow-x: hidden;
+      font-size: 15px;
+      line-height: 1.65;
+    }
+
+    /* BARRA LATERAL */
+    aside.sidebar {
+      width: var(--sidebar-w);
+      background-color: var(--bg-surface);
+      border-right: 1px solid var(--border);
+      height: 100vh;
+      position: sticky;
+      top: 0;
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      z-index: 50;
+      transition: transform 0.3s ease;
+    }
+
+    .brand-box {
+      padding: 24px;
+      border-bottom: 1px solid var(--border);
+    }
+    .brand-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--gold);
+      text-decoration: none;
+      margin-bottom: 12px;
+    }
+    .brand-title {
+      font-family: var(--font-title);
+      font-size: 1.45rem;
+      color: var(--gold-soft);
+      letter-spacing: 1px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .brand-subtitle {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-top: 4px;
+    }
+
+    nav.nav-links {
+      flex: 1;
+      padding: 16px 12px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .nav-btn {
+      width: 100%;
+      text-align: left;
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-muted);
+      padding: 11px 14px;
+      border-radius: 8px;
+      font-family: var(--font-body);
+      font-size: 13.5px;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: all 0.2s ease;
+    }
+    .nav-btn:hover {
+      background-color: var(--bg-surface-elevated);
+      color: var(--text-main);
+    }
+    .nav-btn.active {
+      background-color: var(--gold-dim);
+      border-color: rgba(212, 175, 55, 0.35);
+      color: var(--gold-soft);
+      font-weight: 600;
+    }
+    .nav-btn .icon { font-size: 18px; width: 22px; text-align: center; }
+
+    /* CONTENEDOR PRINCIPAL */
+    main.main-viewport {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    header.topbar {
+      height: 70px;
+      border-bottom: 1px solid var(--border);
+      padding: 0 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      background-color: rgba(12, 15, 20, 0.85);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 40;
+    }
+    [data-theme="sepia"] header.topbar {
+      background-color: rgba(251, 247, 238, 0.9);
+    }
+
+    .search-wrapper {
+      position: relative;
+      flex: 1;
+      max-width: 500px;
+    }
+    .search-input {
+      width: 100%;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 10px 18px 10px 42px;
+      color: var(--text-main);
+      font-family: var(--font-body);
+      font-size: 13.5px;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+    .search-input:focus {
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.15);
+    }
+    .search-icon {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .action-btn {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 8px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 12.5px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .action-btn:hover {
+      color: var(--text-main);
+      border-color: var(--text-muted);
+    }
+
+    /* CONTENIDO DINÁMICO */
+    .content-area {
+      padding: 36px 40px;
+      max-width: 1180px;
+      margin: 0 auto;
+      width: 100%;
+      flex: 1;
+    }
+
+    .section-header {
+      margin-bottom: 32px;
+    }
+    .section-badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 8px;
+    }
+    .section-title {
+      font-family: var(--font-serif);
+      font-size: clamp(1.8rem, 3.5vw, 2.4rem);
+      font-weight: 600;
+      color: var(--gold-soft);
+      line-height: 1.25;
+    }
+    .section-lead {
+      color: var(--text-muted);
+      font-size: 1.05rem;
+      margin-top: 10px;
+      max-width: 820px;
+    }
+
+    /* TARJETAS Y GRID */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 24px;
+    }
+    .card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      transition: all 0.25s ease;
+      display: flex;
+      flex-direction: column;
+    }
+    .card:hover {
+      border-color: rgba(212, 175, 55, 0.4);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px -8px rgba(0,0,0,0.4);
+    }
+    .card-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+    .meta-tag {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 3px 9px;
+      border-radius: 4px;
+      background: var(--gold-dim);
+      color: var(--gold);
+      border: 1px solid rgba(212, 175, 55, 0.25);
+    }
+    .meta-ref {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+    .sanskrit-verse {
+      font-family: var(--font-serif);
+      font-style: italic;
+      color: var(--sanskrit);
+      font-size: 1.15rem;
+      margin-bottom: 8px;
+      line-height: 1.4;
+    }
+    .card-heading {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 12px;
+    }
+    [data-theme="sepia"] .card-heading { color: #1e1915; }
+    .card-body {
+      color: var(--text-muted);
+      font-size: 14px;
+      line-height: 1.6;
+      flex: 1;
+    }
+
+    /* SELECTOR DE PADAS / SUBPESTAÑAS */
+    .tab-pills {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 16px;
+      margin-bottom: 24px;
+      border-bottom: 1px solid var(--border);
+    }
+    .pill-btn {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 8px 18px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+    .pill-btn:hover { color: var(--text-main); }
+    .pill-btn.active {
+      background: var(--gold);
+      color: #0c0f14;
+      border-color: var(--gold);
+      font-weight: 700;
+    }
+
+    /* MÓDULO EXAMEN Y AUTOEVALUACIÓN */
+    .quiz-box {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px;
+      max-width: 760px;
+      margin: 0 auto;
+    }
+    .quiz-question {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--gold-soft);
+      margin-bottom: 24px;
+      line-height: 1.4;
+    }
+    .quiz-options {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .quiz-opt {
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 18px;
+      color: var(--text-main);
+      cursor: pointer;
+      text-align: left;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+    .quiz-opt:hover { border-color: var(--gold); }
+    .quiz-opt.correct {
+      background: rgba(46, 213, 115, 0.15) !important;
+      border-color: #2ed573 !important;
+      color: #2ed573;
+    }
+    .quiz-opt.wrong {
+      background: rgba(255, 71, 87, 0.15) !important;
+      border-color: #ff4757 !important;
+      color: #ff4757;
+    }
+    .quiz-feedback {
+      padding: 16px;
+      border-radius: 8px;
+      background: var(--bg-surface-elevated);
+      font-size: 13.5px;
+      display: none;
+      margin-bottom: 20px;
+    }
+
+    /* MODO MÓVIL */
+    .menu-toggle {
+      display: none;
+      background: transparent;
+      border: none;
+      color: var(--text-main);
+      font-size: 24px;
+      cursor: pointer;
+    }
+
+    @media (max-width: 900px) {
+      aside.sidebar {
+        position: fixed;
+        left: 0;
+        transform: translateX(-100%);
+      }
+      aside.sidebar.open {
+        transform: translateX(0);
+      }
+      .menu-toggle { display: block; }
+      .content-area { padding: 24px 16px; }
+      header.topbar { padding: 0 16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- BARRA LATERAL -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand-box">
+      <a href="../" class="brand-back">← Volver al Menú</a>
+      <div class="brand-title">🪷 DARSHANA</div>
+      <div class="brand-subtitle">Filosofía & Textos Clásicos</div>
+    </div>
+    <nav class="nav-links">
+      <button class="nav-btn active" data-view="cronologia">
+        <span class="icon">⏳</span> Cronología & Raíces
+      </button>
+      <button class="nav-btn" data-view="sutras">
+        <span class="icon">📜</span> Yoga Sutras (4 Padas)
+      </button>
+      <button class="nav-btn" data-view="ashtanga">
+        <span class="icon">☸️</span> Los 8 Pasos (Ashtanga)
+      </button>
+      <button class="nav-btn" data-view="gita">
+        <span class="icon">🏹</span> Bhagavad Gita
+      </button>
+      <button class="nav-btn" data-view="hatha">
+        <span class="icon">☀️</span> Hatha Tradicional
+      </button>
+      <button class="nav-btn" data-view="panteon">
+        <span class="icon">🔱</span> Panteón, Pujas & Mitos
+      </button>
+      <button class="nav-btn" data-view="vinyasa">
+        <span class="icon">🌿</span> Linaje & Escuelas Modernas
+      </button>
+      <button class="nav-btn" data-view="glosario">
+        <span class="icon">📖</span> Glosario Sánscrito
+      </button>
+      <button class="nav-btn" data-view="test">
+        <span class="icon">✍️</span> Simulador de Examen YTT
+      </button>
+    </nav>
+  </aside>
+
+  <!-- CONTENEDOR CENTRAL -->
+  <main class="main-viewport">
+    <header class="topbar">
+      <button class="menu-toggle" id="menuToggle" aria-label="Abrir menú">☰</button>
+      <div class="search-wrapper">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="globalSearch" class="search-input" placeholder="Buscar aforismo, término sánscrito, deidad o concepto...">
+      </div>
+      <div class="top-actions">
+        <button class="action-btn" id="themeBtn">🌓 Modo Sepia</button>
+      </div>
+    </header>
+
+    <div class="content-area" id="contentArea">
+      <!-- Se inyecta dinámicamente con JavaScript -->
+    </div>
+  </main>
+
+  <!-- CARGA DE BASE DE DATOS Y MOTOR -->
+  <script src="data-filosofia.js"></script>
+  <script>
+    // Inicialización y navegación SPA
+    let currentView = 'cronologia';
+    let activePada = 'pada1';
+
+    const sidebar = document.getElementById('sidebar');
+    const menuToggle = document.getElementById('menuToggle');
+    const contentArea = document.getElementById('contentArea');
+    const globalSearch = document.getElementById('globalSearch');
+    const themeBtn = document.getElementById('themeBtn');
+
+    // Control de temas
+    themeBtn.addEventListener('click', () => {
+      const isSepia = document.body.getAttribute('data-theme') === 'sepia';
+      if (isSepia) {
+        document.body.removeAttribute('data-theme');
+        themeBtn.textContent = '🌓 Modo Sepia';
+      } else {
+        document.body.setAttribute('data-theme', 'sepia');
+        themeBtn.textContent = '🌑 Modo Oscuro';
+      }
+    });
+
+    menuToggle.addEventListener('click', () => sidebar.classList.toggle('open'));
+
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentView = btn.getAttribute('data-view');
+        globalSearch.value = '';
+        renderCurrentView();
+        sidebar.classList.remove('open');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    });
+
+    // Renderizador principal
+    function renderCurrentView() {
+      // Verificación de base de datos
+      if (typeof DARSHANA_DB === 'undefined') {
+        contentArea.innerHTML = `
+          <div style="background: rgba(212,175,55,0.08); border: 1px dashed var(--gold); padding: 32px; border-radius: 12px; text-align: center;">
+            <h2 style="font-family: var(--font-serif); color: var(--gold-soft); margin-bottom: 12px;">Cargando Base de Datos...</h2>
+            <p style="color: var(--text-muted);">Crea el archivo <code>filosofia/data-filosofia.js</code> en tu repositorio para habilitar la enciclopedia completa.</p>
+          </div>
+        `;
+        return;
+      }
+
+      switch (currentView) {
+        case 'cronologia': renderCronologia(); break;
+        case 'sutras': renderSutras(); break;
+        case 'ashtanga': renderAshtanga(); break;
+        case 'gita': renderGita(); break;
+        case 'hatha': renderHatha(); break;
+        case 'panteon': renderPanteon(); break;
+        case 'vinyasa': renderVinyasa(); break;
+        case 'glosario': renderGlosario(); break;
+        case 'test': renderQuiz(); break;
+      }
+    }
+
+    function renderCronologia() {
+      const data = DARSHANA_DB.cronologia;
+      contentArea.innerHTML = `
+        <div class="section-header">
+          <span class="section-badge">Historia del Yoga</span>
+          <h1 class="section-title">Evolución Histórica & Raíces Sagradas</h1>
+          <p class="section-lead">${data.introduccion}</p>
+        </div>
+        <div class="cards-grid">
+          ${data.periodos.map(p => `
+            <div class="card">
+              <div class="card-meta">
+                <span class="meta-tag">${p.epoca}</span>
+                <span class="meta-ref">${p.textosClave}</span>
+              </div>
+              <h2 class="card-heading">${p.nombre}</h2>
+              <div class="card-body">
+                <p style="margin-bottom: 12px;">${p.descripcion}</p>
+                <div style="border-top: 1px solid var(--border); padding-top: 12px; font-size: 13px;">
+                  <strong style="color: var(--gold-soft);">Aporte fundamental:</strong> ${p.legado}
+                </div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    function renderSutras() {
+      const sutrasData = DARSHANA_DB.sutras;
+      contentArea.innerHTML = `
+        <div class="section-header">
+          <span class="section-badge">Patanjali Yoga Darshana</span>
+          <h1 class="section-title">Los 4 Padas de los Yoga Sutras</h1>
+          <p class="section-lead">196 aforismos de precisión psicológica y trascendental codificados para desactivar las fluctuaciones del campo mental (Citta Vrtti).</p>
+        </div>
+        <div class="tab-pills">
+          <button class="pill-btn ${activePada === 'pada1' ? 'active' : ''}" onclick="setPada('pada1')">I. Samadhi Pada (51)</button>
+          <button class="pill-btn ${activePada === 'pada2' ? 'active' : ''}" onclick="setPada('pada2')">II. Sadhana Pada (55)</button>
+          <button class="pill-btn ${activePada === 'pada3' ? 'active' : ''}" onclick="setPada('pada3')">III. Vibhuti Pada (56)</button>
+          <button class="pill-btn ${activePada === 'pada4' ? 'active' : ''}" onclick="setPada('pada4')">IV. Kaivalya Pada (34)</button>
+        </div>
+        <div class="cards-grid">
+          ${sutrasData[activePada].aforismos.map(s => `
+            <div class="card">
+              <div class="card-meta">
+                <span class="meta-tag">Sutra ${s.numero}</span>
+                <span class="meta-ref">${s.tema}</span>
+              </div>
+              <div class="sanskrit-verse">${s.sanscrito}</div>
+              <div class="card-heading" style="font-size: 1rem; color: var(--gold-soft);">${s.traduccionLiteral}</div>
+              <div class="card-body">
+                <p style="margin-bottom: 10px;"><strong>Significado:</strong> ${s.comentario}</p>
+                <p style="font-size: 12.5px; border-left: 2px solid var(--gold); padding-left: 10px; color: var(--text-main);">
+                  <em>Aplicación en la esterilla:</em> ${s.aplicacionPractica}
+                </p>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    window.setPada = function(pada) {
+      activePada = pada;
+      renderSutras();
+    };
+
+    function renderAshtanga() {
+      const data = DARSHANA_DB.ashtanga;
+      contentArea.innerHTML = `
+        <div class="section-header">
+          <span class="section-badge">Patanjali Sadhana Pada</span>
+          <h1 class="section-title">El Óctuple Sendero (Ashtanga Yoga)</h1>
+          <p class="section-lead">La estructura metódica y progresiva de 8 ramas para purificar el contenedor psicofísico y acceder a la absorción meditativa.</p>
+        </div>
+        <div class="cards-grid">
+          ${data.map((step, idx) => `
+            <div class="card">
+              <div class="card-meta">
+                <span class="meta-tag">Paso ${idx + 1}</span>
+                <span class="meta-ref">${step.naturaleza}</span>
+              </div>
+              <div class="sanskrit-verse">${step.nombreSanscrito}</div>
+              <h2 class="card-heading">${step.traduccion}</h2>
+              <div class="card-body">
+                <p style="margin-bottom: 12px;">${step.definicion}</p>
+                <div style="background: var(--bg-surface-elevated); padding: 12px; border-radius: 8px; font-size: 13px;">
+                  <strong style="color: var(--gold-soft);">Desglose de ramas:</strong>
+                  <ul style="padding-left: 18px; margin-top: 6px;">
+                    ${step.subelementos.map(sub => `<li><strong>${sub.nombre}:</strong> ${sub.detalle}</li>`).join('')}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    function renderGita() {
+      const data = DARSHANA_DB.bhagavadGita;
+      contentArea.innerHTML = `
+        <div class="section-header">
+          <span class="section-badge">Mahabharata</span>
+          <h1 class="section-title">El Canto Celestial: Bhagavad Gita</h1>
+          <p class="section-lead">El diálogo iniciático entre Krishna y Arjuna en el campo de batalla de Kurukshetra, alegoría de la mente humana y los deberes del alma.</p>
+        </div>
+        <div class="cards-grid">
+          ${data.senderos.map(s => `
+            <div class="card">
+              <div class="card-meta">
+                <span class="meta-tag">Sendero Mayor</span>
+                <span class="meta-ref">${s.sanscrito}</span>
+              </div>
+              <h2 class="card-heading">${s.nombre}</h2>
+              <div class="card-body">
+                <p style="margin-bottom: 12px;">${s.definicion}</p>
+                <div style="border-left: 2px solid var(--sanskrit); padding-left: 10px; font-style: italic; margin-bottom: 12px; font-size: 13px;">
+                  "${s.versoClave}"
+                </div>
+                <p style="font-size: 13px;"><strong>Integración contemporánea:</strong> ${s.aplicacion}</p>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    function renderHatha() {
+      const data = DARSHANA_DB.hathaTradicional;
+      contentArea.innerHTML = `
+        <div class="section-header">
+          <span class="section-badge">Periodo Postclásico</span>
+          <h1 class="section-title">Textos Fundamentales del Hatha Yoga</h1>
+          <p class="section-lead">La alquimia bioenergética que convirtió el cuerpo físico en el vehículo directo para el despertar espiritual.</p>
+        </div>
+        <div class="cards-grid">
+          ${data.textos.map(t => `
+            <div class="card">
+              <div class="card-meta">
+                <span class="meta-tag">${t.siglo}</span>
+                <span class="meta-ref">${t.autor}</span>
+              </div>
+              <h2 class="card-heading">${t.titulo}</h2>
+              <div class="card-body">
+                <p style="margin-bottom: 12px;">${t.resumen}</p>
+                <ul style="font-size: 13px; padding-left: 16px; margin-bottom: 12px; color: var(--text-muted);">
+                  ${t.capitulos.map(c => `<li>${c}</li>`).join('')}
+                </ul>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    function renderPanteon() {
+      const data = DARSHANA_DB.panteon;
+      contentArea.innerHTML = `
+        <div class="section-header">
+          <span class="section-badge">Historia Sagrada & Simbolismo</span>
+          <h1 class="section-title">Arquetipos Sagrados, Mitología & Pujas</h1>
+          <p class="section-lead">Deidades como representaciones vivas de las fuerzas cósmicas y tecnologías rituales de enfoque mental.</p>
+        </div>
+        <div class="cards-grid">
+          ${data.deidades.map(d => `
+            <div class="card">
+              <div class="card-meta">
+                <span class="meta-tag">${d.rol}</span>
+                <span class="meta-ref">${d.consorteOAtributo}</span>
+              </div>
+              <div class="sanskrit-verse">${d.nombre}</div>
+              <div class="card-heading" style="font-size: 1.1rem;">${d.simbolismoPsicologico}</div>
+              <div class="card-body">
+                <p style="margin-bottom: 12px;">${d.narrativa}</p>
+                <p style="font-size: 13px; color: var(--gold-soft);"><strong>Mantra Semilla (Bija):</strong> <code>${d.mantra}</code></p>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    function renderVinyasa() {
+      const data = DARSHANA_DB.vinyasa;
+      contentArea.innerHTML = `
+        <div class="section-header">
+          <span class="section-badge">Linaje Contemporáneo</span>
+          <h1 class="section-title">Evolución del Vinyasa Yoga</h1>
+          <p class="section-lead">Desde el palacio de Mysore con T. Krishnamacharya hasta la ramificación de las escuelas globales del siglo XXI.</p>
+        </div>
+        <div class="cards-grid">
+          ${data.maestros.map(m => `
+            <div class="card">
+              <div class="card-meta">
+                <span class="meta-tag">${m.años}</span>
+                <span class="meta-ref">${m.escuela}</span>
+              </div>
+              <h2 class="card-heading">${m.nombre}</h2>
+              <div class="card-body">
+                <p style="margin-bottom: 12px;">${m.enfoque}</p>
+                <div style="background: var(--bg-surface-elevated); padding: 10px; border-radius: 6px; font-size: 12.5px;">
+                  <strong style="color: var(--gold-soft);">Aportación a Occidente:</strong> ${m.contribucion}
+                </div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    function renderGlosario() {
+      const data = DARSHANA_DB.glosario;
+      contentArea.innerHTML = `
+        <div class="section-header">
+          <span class="section-badge">Etimología Sagrada</span>
+          <h1 class="section-title">Diccionario Sánscrito Etimológico</h1>
+          <p class="section-lead">Desglose de raíces verbales, prefijos y significados esenciales para una comprensión técnica profunda.</p>
+        </div>
+        <div class="cards-grid">
+          ${data.map(g => `
+            <div class="card">
+              <div class="card-meta">
+                <span class="meta-tag">Raíz: ${g.raiz}</span>
+                <span class="meta-ref">${g.categoria}</span>
+              </div>
+              <div class="sanskrit-verse">${g.palabra}</div>
+              <h2 class="card-heading" style="font-size: 1.15rem;">${g.traduccion}</h2>
+              <div class="card-body">
+                <p>${g.definicion}</p>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    function renderQuiz() {
+      const quiz = DARSHANA_DB.preguntasExamen;
+      contentArea.innerHTML = `
+        <div class="section-header" style="text-align: center;">
+          <span class="section-badge">Certificación 200h / 300h</span>
+          <h1 class="section-title">Simulador Oficial de Filosofía</h1>
+          <p class="section-lead" style="margin: 0 auto;">Ponte a prueba con cuestiones tipo test y justificaciones extraídas de los estándares internacionales de Yoga Alliance.</p>
+        </div>
+        <div id="quizContainer">
+          ${quiz.map((q, idx) => `
+            <div class="quiz-box" style="margin-bottom: 24px;">
+              <div style="font-size: 12px; color: var(--gold); font-weight: 700; text-transform: uppercase; margin-bottom: 8px;">Pregunta ${idx + 1} de ${quiz.length} •${q.tema}</div>
+              <div class="quiz-question">${q.enunciado}</div>
+              <div class="quiz-options">
+                ${q.opciones.map((opt, oIdx) => `
+                  <button class="quiz-opt" onclick="checkAnswer(this, ${idx}, ${oIdx})">${opt}</button>
+                `).join
