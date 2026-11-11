@@ -226,7 +226,6 @@
       border-color: var(--text-muted);
     }
 
-    /* CONTENIDO DINÁMICO */
     .content-area {
       padding: 36px 40px;
       max-width: 1280px;
@@ -261,7 +260,6 @@
       max-width: 860px;
     }
 
-    /* FILTROS / PILLS */
     .tab-pills {
       display: flex;
       gap: 8px;
@@ -290,7 +288,6 @@
       font-weight: 700;
     }
 
-    /* GRID & CARDS */
     .cards-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
@@ -544,7 +541,6 @@
       top: 90px;
     }
 
-    /* BARRA DE TIEMPO VISUAL */
     .timeline-card {
       background: var(--bg-surface-elevated);
       border: 1px solid var(--border);
@@ -583,7 +579,6 @@
       border-radius: 2px;
     }
 
-    /* TARJETAS POR FASES */
     .phase-block {
       margin-bottom: 24px;
       border: 1px solid var(--border);
@@ -629,7 +624,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
       transition: border-color 0.2s;
     }
     .seq-item:hover { border-color: var(--teal); }
@@ -646,6 +641,21 @@
       border-radius: 4px;
       outline: none;
     }
+
+    /* SELECTOR DE RESPIRACIÓN */
+    .breath-select {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      font-size: 11.5px;
+      font-weight: 700;
+      padding: 4px 6px;
+      border-radius: 4px;
+      outline: none;
+      cursor: pointer;
+    }
+    .breath-select[data-breath="inhala"] { color: var(--teal); border-color: rgba(45, 212, 191, 0.4); }
+    .breath-select[data-breath="exhala"] { color: var(--amber); border-color: rgba(245, 158, 11, 0.4); }
+    .breath-select[data-breath="libre"] { color: var(--purple); border-color: rgba(192, 132, 252, 0.4); }
 
     .duration-control {
       display: flex;
@@ -688,7 +698,6 @@
     }
     .seq-btn:hover { color: var(--text-main); border-color: var(--text-muted); }
 
-    /* AUDITOR PEDAGÓGICO */
     .audit-box {
       border-radius: 8px;
       padding: 12px 14px;
@@ -707,7 +716,6 @@
       color: var(--amber);
     }
 
-    /* MODO MÓVIL */
     .menu-toggle {
       display: none;
       background: transparent;
@@ -813,7 +821,6 @@
     let activeAsanaModal = null;
     let activeModalSubTab = 'alineacion';
 
-    // Constantes pedagógicas de las 5 Fases
     const FASES_CANONICAS = [
       { id: 1, nombre: "1. Inicio y Centrado", minIdeal: 5, maxIdeal: 10, color: "#818cf8", desc: "Desconectar del exterior, Sankalpa y Pranayama" },
       { id: 2, nombre: "2. Calentamiento & Surya Namaskar", minIdeal: 10, maxIdeal: 15, color: "#fbbf24", desc: "Movilidad articular, Gato-Vaca y Saludos al Sol" },
@@ -822,10 +829,8 @@
       { id: 5, nombre: "5. Relajación Final y Cierre", minIdeal: 5, maxIdeal: 10, color: "#2dd4bf", desc: "Savasana consciente, integración y Namaste" }
     ];
 
-    // Estado del secuenciador
     let currentSequence = JSON.parse(localStorage.getItem('kinesis_seq') || '[]');
 
-    // Estado del Pranayama Pacer & Web Audio API
     let pacerInterval = null;
     let pacerRunning = false;
     let audioCtx = null;
@@ -836,7 +841,6 @@
     const globalSearch = document.getElementById('globalSearch');
     const themeBtn = document.getElementById('themeBtn');
 
-    // Tema Claro / Oscuro
     themeBtn.addEventListener('click', () => {
       const isLight = document.body.getAttribute('data-theme') === 'light';
       if (isLight) {
@@ -1247,16 +1251,28 @@
       `;
     }
 
-    /* 5. SECUENCIADOR CANÓNICO DE 5 FASES CON ASISTENTE DE ESTILOS */
+    /* 5. SECUENCIADOR CANÓNICO DE 5 FASES CON SELECTOR RESPIRATORIO */
     function renderSecuenciador() {
       currentSequence.forEach(item => {
         if (!item.fase) {
           if (item.id === 'savasana') item.fase = 5;
           else if (item.id === 'balasana') item.fase = 1;
-          else if (item.familia === 'restaurativa') item.fase = 4;
+          else if (item.familia === 'restaurativa' || item.familia === 'flexión') item.fase = 4;
+          else if (item.familia === 'yin yoga') item.fase = 3;
           else item.fase = 3;
         }
-        if (!item.duracionMin) item.duracionMin = 3;
+        if (!item.duracionMin) item.duracionMin = (item.familia === 'yin yoga' ? 5 : (item.id === 'savasana' ? 10 : 3));
+
+        // Asignación automática inteligente de respiración si no la tiene
+        if (!item.respiracion) {
+          if (item.familia === 'yin yoga' || item.familia === 'restaurativa' || item.id === 'savasana' || item.id === 'balasana') {
+            item.respiracion = 'libre';
+          } else if (item.familia === 'flexión' || item.familia === 'torsión' || item.id === 'chaturanga-dandasana') {
+            item.respiracion = 'exhala';
+          } else {
+            item.respiracion = 'inhala';
+          }
+        }
       });
 
       const totalMinutos = currentSequence.reduce((acc, curr) => acc + curr.duracionMin, 0);
@@ -1276,7 +1292,7 @@
         <div class="section-header">
           <span class="section-badge">Bloque 6: Vinyasa Krama</span>
           <h1 class="section-title">Secuenciador de Clases Canónico (60 - 75 min)</h1>
-          <p class="section-lead">Diseña sesiones respetando la curva energética clásica: Inicio & Centrado → Calentamiento → Asana Pico → Compensación → Savasana & Cierre.</p>
+          <p class="section-lead">Diseña sesiones respetando la curva energética clásica y la sincronización respiratoria: Inhala ⇡ (apertura) / Exhala ⇣ (plegado) / Libre 〰️ (Yin).</p>
         </div>
 
         <div class="sequencer-layout">
@@ -1361,6 +1377,13 @@
                           <option value="5" ${item.fase === 5 ? 'selected' : ''}>Fase 5 (Cierre)</option>
                         </select>
 
+                        <!-- Selector de Respiración Vinyasa -->
+                        <select class="breath-select" data-breath="${item.respiracion || 'inhala'}" onchange="changeItemBreath(${item.originalIdx}, this.value)">
+                          <option value="inhala" ${(item.respiracion || 'inhala') === 'inhala' ? 'selected' : ''}>Inhala ⇡</option>
+                          <option value="exhala" ${item.respiracion === 'exhala' ? 'selected' : ''}>Exhala ⇣</option>
+                          <option value="libre" ${item.respiracion === 'libre' ? 'selected' : ''}>Libre 〰️</option>
+                        </select>
+
                         <!-- Control de Minutos -->
                         <div class="duration-control">
                           <button class="btn-step" onclick="changeItemDuration(${item.originalIdx}, -1)">-</button>
@@ -1382,12 +1405,12 @@
             }).join('')}
 
             <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); display: flex; gap: 10px; flex-wrap: wrap;">
-              <button class="btn-ctl" onclick="exportSequence()">Copiar Guion de Clase (5 Fases)</button>
+              <button class="btn-ctl" onclick="exportSequence()">Copiar Guion de Clase (5 Fases & Respiración)</button>
               <button class="btn-ctl btn-ctl-secondary" onclick="clearSequence()">Vaciar Clase</button>
             </div>
           </div>
 
-          <!-- PANEL LATERAL: ASISTENTE DE ESTILOS (HATHA, VINYASA, YIN, TERAPÉUTICO) -->
+          <!-- PANEL LATERAL: ASISTENTE DE ESTILOS -->
           <div class="sequence-sidebar">
             <h4 style="font-size: 1.05rem; color: var(--teal-soft); margin-bottom: 4px;">Guía de Estilos & Asistente</h4>
             <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 14px;">Selecciona el estilo para ver sus propiedades y cargar su estructura:</p>
@@ -1422,9 +1445,15 @@
       let defaultFase = 3;
       if (a.id === 'savasana') defaultFase = 5;
       else if (a.id === 'balasana') defaultFase = 1;
-      else if (a.familia === 'restaurativa') defaultFase = 4;
-      else if (a.familia === 'flexión') defaultFase = 4;
+      else if (a.familia === 'restaurativa' || a.familia === 'flexión') defaultFase = 4;
       else if (a.familia === 'yin yoga') defaultFase = 3;
+
+      let defaultBreath = 'inhala';
+      if (a.familia === 'flexión' || a.familia === 'torsión' || a.id === 'chaturanga-dandasana') {
+        defaultBreath = 'exhala';
+      } else if (a.familia === 'yin yoga' || a.familia === 'restaurativa' || a.id === 'savasana' || a.id === 'balasana') {
+        defaultBreath = 'libre';
+      }
 
       currentSequence.push({
         id: a.id,
@@ -1432,16 +1461,25 @@
         espanol: a.espanol,
         familia: a.familia,
         fase: defaultFase,
+        respiracion: defaultBreath,
         duracionMin: a.id === 'savasana' ? 10 : (a.familia === 'yin yoga' ? 5 : 3)
       });
 
       localStorage.setItem('kinesis_seq', JSON.stringify(currentSequence));
-      alert(`Añadida a la secuencia: ${a.sanscrito} (Asignada a Fase ${defaultFase})`);
+      alert(`Añadida a la secuencia: ${a.sanscrito} [${defaultBreath.toUpperCase()}]`);
     };
 
     window.changeItemPhase = function(idx, newPhase) {
       if (currentSequence[idx]) {
         currentSequence[idx].fase = parseInt(newPhase);
+        localStorage.setItem('kinesis_seq', JSON.stringify(currentSequence));
+        renderSecuenciador();
+      }
+    };
+
+    window.changeItemBreath = function(idx, newBreath) {
+      if (currentSequence[idx]) {
+        currentSequence[idx].respiracion = newBreath;
         localStorage.setItem('kinesis_seq', JSON.stringify(currentSequence));
         renderSecuenciador();
       }
@@ -1482,56 +1520,53 @@
     window.loadTemplate = function(type) {
       if (type === 'vinyasa65') {
         currentSequence = [
-          { id: "balasana", sanscrito: "Balasana", espanol: "Niño", familia: "restaurativa", fase: 1, duracionMin: 4 },
-          { id: "tadasana", sanscrito: "Tadasana & Pranayama Ujjayi", espanol: "Centramiento erguido", familia: "de pie", fase: 1, duracionMin: 4 },
-          { id: "adho-mukha-svanasana", sanscrito: "Adho Mukha Svanasana", espanol: "Perro Mirando Abajo", familia: "inversión", fase: 2, duracionMin: 4 },
-          { id: "uttanasana", sanscrito: "Surya Namaskar A (Ciclos)", espanol: "Saludos al Sol dinámicos", familia: "flexión", fase: 2, duracionMin: 8 },
-          { id: "virabhadrasana-1", sanscrito: "Virabhadrasana I", espanol: "Guerrero I", familia: "de pie", fase: 3, duracionMin: 4 },
-          { id: "virabhadrasana-2", sanscrito: "Virabhadrasana II", espanol: "Guerrero II", familia: "de pie", fase: 3, duracionMin: 4 },
-          { id: "utthita-trikonasana", sanscrito: "Utthita Trikonasana", espanol: "Triángulo", familia: "de pie", fase: 3, duracionMin: 4 },
-          { id: "virabhadrasana-3", sanscrito: "Virabhadrasana III (Clímax)", espanol: "Guerrero III", familia: "de pie", fase: 3, duracionMin: 5 },
-          { id: "chaturanga-dandasana", sanscrito: "Chaturanga Dandasana", espanol: "Fuerza 4 apoyos", familia: "equilibrio brazos", fase: 3, duracionMin: 4 },
-          { id: "urdhva-mukha-svanasana", sanscrito: "Urdhva Mukha Svanasana", espanol: "Perro Arriba", familia: "extensión", fase: 3, duracionMin: 4 },
-          { id: "ardha-matsyendrasana", sanscrito: "Ardha Matsyendrasana", espanol: "Torsión espinal", familia: "torsión", fase: 4, duracionMin: 4 },
-          { id: "paschimottanasana", sanscrito: "Paschimottanasana", espanol: "Flexión Sentada", familia: "flexión", fase: 4, duracionMin: 4 },
-          { id: "savasana", sanscrito: "Savasana & Namaste", espanol: "Relajación Final e Integración", familia: "restaurativa", fase: 5, duracionMin: 10 }
+          { id: "balasana", sanscrito: "Balasana", espanol: "Niño", familia: "restaurativa", fase: 1, respiracion: "libre", duracionMin: 4 },
+          { id: "tadasana", sanscrito: "Tadasana & Pranayama Ujjayi", espanol: "Centramiento erguido", familia: "de pie", fase: 1, respiracion: "inhala", duracionMin: 4 },
+          { id: "adho-mukha-svanasana", sanscrito: "Adho Mukha Svanasana", espanol: "Perro Mirando Abajo", familia: "inversión", fase: 2, respiracion: "exhala", duracionMin: 4 },
+          { id: "uttanasana", sanscrito: "Surya Namaskar A (Ciclos)", espanol: "Saludos al Sol dinámicos", familia: "flexión", fase: 2, respiracion: "exhala", duracionMin: 8 },
+          { id: "virabhadrasana-1", sanscrito: "Virabhadrasana I", espanol: "Guerrero I", familia: "de pie", fase: 3, respiracion: "inhala", duracionMin: 4 },
+          { id: "virabhadrasana-2", sanscrito: "Virabhadrasana II", espanol: "Guerrero II", familia: "de pie", fase: 3, respiracion: "exhala", duracionMin: 4 },
+          { id: "utthita-trikonasana", sanscrito: "Utthita Trikonasana", espanol: "Triángulo", familia: "de pie", fase: 3, respiracion: "exhala", duracionMin: 4 },
+          { id: "virabhadrasana-3", sanscrito: "Virabhadrasana III (Clímax)", espanol: "Guerrero III", familia: "de pie", fase: 3, respiracion: "inhala", duracionMin: 5 },
+          { id: "chaturanga-dandasana", sanscrito: "Chaturanga Dandasana", espanol: "Fuerza 4 apoyos", familia: "equilibrio brazos", fase: 3, respiracion: "exhala", duracionMin: 4 },
+          { id: "bhujangasana", sanscrito: "Bhujangasana", espanol: "Cobra", familia: "extensión", fase: 3, respiracion: "inhala", duracionMin: 4 },
+          { id: "paschimottanasana", sanscrito: "Paschimottanasana", espanol: "Flexión Sentada", familia: "flexión", fase: 4, respiracion: "exhala", duracionMin: 4 },
+          { id: "savasana", sanscrito: "Savasana & Namaste", espanol: "Relajación Final e Integración", familia: "restaurativa", fase: 5, respiracion: "libre", duracionMin: 10 }
         ];
       } else if (type === 'hatha60') {
         currentSequence = [
-          { id: "balasana", sanscrito: "Balasana & Toma de Consciencia", espanol: "Niño", familia: "restaurativa", fase: 1, duracionMin: 5 },
-          { id: "tadasana", sanscrito: "Tadasana", espanol: "Montaña", familia: "de pie", fase: 1, duracionMin: 3 },
-          { id: "adho-mukha-svanasana", sanscrito: "Adho Mukha Svanasana", espanol: "Perro Abajo", familia: "inversión", fase: 2, duracionMin: 5 },
-          { id: "prasarita-padottanasana", sanscrito: "Prasarita Padottanasana", espanol: "Flexión de pie", familia: "de pie", fase: 2, duracionMin: 5 },
-          { id: "virabhadrasana-2", sanscrito: "Virabhadrasana II", espanol: "Guerrero II", familia: "de pie", fase: 3, duracionMin: 5 },
-          { id: "utthita-trikonasana", sanscrito: "Utthita Trikonasana", espanol: "Triángulo", familia: "de pie", fase: 3, duracionMin: 5 },
-          { id: "vrksasana", sanscrito: "Vrksasana (Pico de equilibrio)", espanol: "Árbol", familia: "de pie", fase: 3, duracionMin: 5 },
-          { id: "bhujangasana", sanscrito: "Bhujangasana", espanol: "Cobra", familia: "extensión", fase: 3, duracionMin: 5 },
-          { id: "janu-sirsasana", sanscrito: "Janu Sirsasana", espanol: "Flexión asimétrica", familia: "flexión", fase: 4, duracionMin: 5 },
-          { id: "setu-bandhasana", sanscrito: "Setu Bandhasana", espanol: "Medio Puente", familia: "extensión", fase: 4, duracionMin: 5 },
-          { id: "savasana", sanscrito: "Savasana", espanol: "Relajación Completa", familia: "restaurativa", fase: 5, duracionMin: 12 }
+          { id: "balasana", sanscrito: "Balasana & Toma de Consciencia", espanol: "Niño", familia: "restaurativa", fase: 1, respiracion: "libre", duracionMin: 5 },
+          { id: "tadasana", sanscrito: "Tadasana", espanol: "Montaña", familia: "de pie", fase: 1, respiracion: "inhala", duracionMin: 3 },
+          { id: "adho-mukha-svanasana", sanscrito: "Adho Mukha Svanasana", espanol: "Perro Abajo", familia: "inversión", fase: 2, respiracion: "exhala", duracionMin: 5 },
+          { id: "virabhadrasana-2", sanscrito: "Virabhadrasana II", espanol: "Guerrero II", familia: "de pie", fase: 3, respiracion: "exhala", duracionMin: 5 },
+          { id: "utthita-trikonasana", sanscrito: "Utthita Trikonasana", espanol: "Triángulo", familia: "de pie", fase: 3, respiracion: "exhala", duracionMin: 5 },
+          { id: "vrksasana", sanscrito: "Vrksasana (Pico de equilibrio)", espanol: "Árbol", familia: "de pie", fase: 3, respiracion: "inhala", duracionMin: 5 },
+          { id: "bhujangasana", sanscrito: "Bhujangasana", espanol: "Cobra", familia: "extensión", fase: 3, respiracion: "inhala", duracionMin: 5 },
+          { id: "ustrasana", sanscrito: "Ustrasana", espanol: "Camello", familia: "extensión", fase: 4, respiracion: "inhala", duracionMin: 5 },
+          { id: "paschimottanasana", sanscrito: "Paschimottanasana", espanol: "Flexión Sentada", familia: "flexión", fase: 4, respiracion: "exhala", duracionMin: 5 },
+          { id: "savasana", sanscrito: "Savasana", espanol: "Relajación Completa", familia: "restaurativa", fase: 5, respiracion: "libre", duracionMin: 12 }
         ];
       } else if (type === 'yin60') {
         currentSequence = [
-          { id: "yin-mariposa", sanscrito: "La Mariposa (Butterfly)", espanol: "Apertura lumbar y meridianos", familia: "yin yoga", fase: 1, duracionMin: 6 },
-          { id: "yin-dragon", sanscrito: "El Dragón (Dragon Pose)", espanol: "Apertura profunda de psoas", familia: "yin yoga", fase: 3, duracionMin: 8 },
-          { id: "yin-cisne", sanscrito: "El Cisne Durmiente (Swan)", espanol: "Liberación fascial de cadera", familia: "yin yoga", fase: 3, duracionMin: 8 },
-          { id: "yin-esfinge-foca", sanscrito: "La Esfinge & La Foca", espanol: "Compresión pasiva lumbar", familia: "yin yoga", fase: 3, duracionMin: 6 },
-          { id: "yin-silla-montar", sanscrito: "La Silla de Montar (Saddle)", espanol: "Apertura de cuádriceps y estómago", familia: "yin yoga", fase: 3, duracionMin: 6 },
-          { id: "yin-oruga", sanscrito: "La Oruga (Caterpillar)", espanol: "Tracción pasiva de espalda", familia: "yin yoga", fase: 4, duracionMin: 6 },
-          { id: "yin-bananasana", sanscrito: "Bananasana", espanol: "Apertura de la cadena lateral", familia: "yin yoga", fase: 4, duracionMin: 8 },
-          { id: "yin-torsion-raices", sanscrito: "Torsión de Raíces Caídas", espanol: "Neutralización y calma", familia: "yin yoga", fase: 4, duracionMin: 6 },
-          { id: "savasana", sanscrito: "Savasana Profundo & Rebound Final", espanol: "Rehidratación fascial e integración", familia: "restaurativa", fase: 5, duracionMin: 10 }
+          { id: "yin-mariposa", sanscrito: "La Mariposa (Butterfly)", espanol: "Apertura lumbar y meridianos", familia: "yin yoga", fase: 1, respiracion: "libre", duracionMin: 6 },
+          { id: "yin-dragon", sanscrito: "El Dragón (Dragon Pose)", espanol: "Apertura profunda de psoas", familia: "yin yoga", fase: 3, respiracion: "libre", duracionMin: 8 },
+          { id: "yin-cisne", sanscrito: "El Cisne Durmiente (Swan)", espanol: "Liberación fascial de cadera", familia: "yin yoga", fase: 3, respiracion: "libre", duracionMin: 8 },
+          { id: "yin-esfinge-foca", sanscrito: "La Esfinge & La Foca", espanol: "Compresión pasiva lumbar", familia: "yin yoga", fase: 3, respiracion: "libre", duracionMin: 6 },
+          { id: "yin-silla-montar", sanscrito: "La Silla de Montar (Saddle)", espanol: "Apertura de cuádriceps y estómago", familia: "yin yoga", fase: 3, respiracion: "libre", duracionMin: 6 },
+          { id: "yin-oruga", sanscrito: "La Oruga (Caterpillar)", espanol: "Tracción pasiva de espalda", familia: "yin yoga", fase: 4, respiracion: "libre", duracionMin: 6 },
+          { id: "yin-bananasana", sanscrito: "Bananasana", espanol: "Apertura de la cadena lateral", familia: "yin yoga", fase: 4, respiracion: "libre", duracionMin: 8 },
+          { id: "yin-torsion-raices", sanscrito: "Torsión de Raíces Caídas", espanol: "Neutralización y calma", familia: "yin yoga", fase: 4, respiracion: "libre", duracionMin: 6 },
+          { id: "savasana", sanscrito: "Savasana Profundo & Rebound Final", espanol: "Rehidratación fascial e integración", familia: "restaurativa", fase: 5, respiracion: "libre", duracionMin: 10 }
         ];
       } else if (type === 'terapeutica60') {
         currentSequence = [
-          { id: "balasana", sanscrito: "Balasana con Bolster", espanol: "Niño Restaurativo", familia: "restaurativa", fase: 1, duracionMin: 7 },
-          { id: "adho-mukha-svanasana", sanscrito: "Adho Mukha en Pared", espanol: "Descarga de hombros", familia: "inversión", fase: 2, duracionMin: 5 },
-          { id: "baddha-konasana", sanscrito: "Baddha Konasana con Bloques", espanol: "Apertura suave", familia: "caderas", fase: 2, duracionMin: 6 },
-          { id: "eka-pada-rajakapotasana", sanscrito: "Paloma con Soporte (Pico)", espanol: "Liberación glúteo", familia: "caderas", fase: 3, duracionMin: 10 },
-          { id: "setu-bandhasana", sanscrito: "Setu Bandhasana con Bloque sacro", espanol: "Puente pasivo", familia: "extensión", fase: 3, duracionMin: 8 },
-          { id: "ardha-matsyendrasana", sanscrito: "Ardha Matsyendrasana Suave", espanol: "Torsión digestiva", familia: "torsión", fase: 4, duracionMin: 6 },
-          { id: "viparita-karani", sanscrito: "Viparita Karani", espanol: "Piernas en Pared", familia: "restaurativa", fase: 4, duracionMin: 8 },
-          { id: "savasana", sanscrito: "Savasana con Manta Cervical", espanol: "Integración", familia: "restaurativa", fase: 5, duracionMin: 10 }
+          { id: "balasana", sanscrito: "Balasana con Bolster", espanol: "Niño Restaurativo", familia: "restaurativa", fase: 1, respiracion: "libre", duracionMin: 7 },
+          { id: "adho-mukha-svanasana", sanscrito: "Adho Mukha en Pared", espanol: "Descarga de hombros", familia: "inversión", fase: 2, respiracion: "exhala", duracionMin: 5 },
+          { id: "yin-mariposa", sanscrito: "Mariposa con Bloques", espanol: "Apertura suave", familia: "yin yoga", fase: 2, respiracion: "libre", duracionMin: 6 },
+          { id: "yin-cisne", sanscrito: "Paloma con Soporte (Pico)", espanol: "Liberación glúteo", familia: "yin yoga", fase: 3, respiracion: "libre", duracionMin: 10 },
+          { id: "yin-esfinge-foca", sanscrito: "Esfinge Pasiva", espanol: "Extensión lumbar suave", familia: "yin yoga", fase: 3, respiracion: "libre", duracionMin: 8 },
+          { id: "yin-torsion-raices", sanscrito: "Torsión Pasiva Suave", espanol: "Torsión digestiva", familia: "yin yoga", fase: 4, respiracion: "libre", duracionMin: 6 },
+          { id: "savasana", sanscrito: "Savasana con Manta Cervical", espanol: "Integración", familia: "restaurativa", fase: 5, respiracion: "libre", duracionMin: 10 }
         ];
       }
 
@@ -1546,6 +1581,7 @@
       }
 
       const totalMin = currentSequence.reduce((acc, curr) => acc + curr.duracionMin, 0);
+      const breathMap = { inhala: "Inhala ⇡", exhala: "Exhala ⇣", libre: "Respiración Libre 〰️" };
 
       let text = `====================================================\n`;
       text += `GUION DOCENTE DE CLASE DE YOGA (Vinyasa Krama)\n`;
@@ -1563,14 +1599,15 @@
           text += `(Sin posturas asignadas)\n\n`;
         } else {
           items.forEach((item, i) => {
-            text += `  ${i + 1}. ${item.sanscrito} (${item.espanol}) — ${item.duracionMin} min [${item.familia}]\n`;
+            const cue = breathMap[item.respiracion] || "Inhala ⇡";
+            text += `  ${i + 1}. [${cue}] ${item.sanscrito} (${item.espanol}) — ${item.duracionMin} min [${item.familia}]\n`;
           });
           text += `\n`;
         }
       });
 
       navigator.clipboard.writeText(text).then(() => {
-        alert('¡Guion de clase copiado al portapapeles con la estructura de las 5 fases!');
+        alert('¡Guion de clase copiado al portapapeles con fases y pautas respiratorias!');
       });
     };
 
@@ -1685,7 +1722,6 @@
       `;
     };
 
-    // Carga segura
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', renderCurrentView);
     } else {
