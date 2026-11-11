@@ -884,7 +884,7 @@
       }
     }
 
-    /* 1. ASANA LAB */
+    /* 1. ASANA LAB CON FILTRO YIN YOGA */
     function renderAsanas() {
       const asanas = PRACTICA_DB.asanas;
       const familias = ['todas', 'de pie', 'flexión', 'extensión', 'torsión', 'caderas', 'inversión', 'equilibrio brazos', 'restaurativa', 'yin yoga'];
@@ -1247,9 +1247,8 @@
       `;
     }
 
-    /* 5. SECUENCIADOR CANÓNICO DE 5 FASES */
+    /* 5. SECUENCIADOR CANÓNICO DE 5 FASES CON ASISTENTE DE ESTILOS */
     function renderSecuenciador() {
-      // Normalizar elementos asegurando que tengan fase (1 al 5) y duración
       currentSequence.forEach(item => {
         if (!item.fase) {
           if (item.id === 'savasana') item.fase = 5;
@@ -1262,18 +1261,16 @@
 
       const totalMinutos = currentSequence.reduce((acc, curr) => acc + curr.duracionMin, 0);
 
-      // Calcular tiempo acumulado por fase
       const minutosFase = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
       currentSequence.forEach(item => {
         minutosFase[item.fase] = (minutosFase[item.fase] || 0) + item.duracionMin;
       });
 
-      // Auditoría Pedagógica
       let avisos = [];
       if (totalMinutos < 60) avisos.push(`La sesión dura ${totalMinutos} min (por debajo del estándar de 60-75 min).`);
       if (totalMinutos > 75) avisos.push(`La sesión dura ${totalMinutos} min (excede los 75 min recomendados).`);
-      if (minutosFase[2] === 0) avisos.push(`Falta la Fase 2 (Calentamiento & Surya Namaskar) antes del esfuerzo principal.`);
-      if (minutosFase[5] < 7) avisos.push(`Savasana y Cierre tiene ${minutosFase[5]} min (se recomiendan mínimo 7 a 10 min para consolidar la relajación parasimpática).`);
+      if (minutosFase[2] === 0) avisos.push(`Falta la Fase 2 (Calentamiento) antes del esfuerzo principal (salvo en Yin Yoga puro).`);
+      if (minutosFase[5] < 7) avisos.push(`Savasana y Cierre tiene ${minutosFase[5]} min (se recomiendan mínimo 7 a 10 min).`);
 
       contentArea.innerHTML = `
         <div class="section-header">
@@ -1325,12 +1322,12 @@
               </div>
             `}
 
-            <!-- LISTADO DE POSTURAS ORGANIZADAS POR LAS 5 FASES -->
+            <!-- LISTADO DE POSTURAS POR FASES -->
             ${currentSequence.length === 0 ? `
               <div style="text-align: center; padding: 60px 20px; color: var(--text-muted);">
                 <div style="font-size: 40px; margin-bottom: 12px;">🧘</div>
                 <p>Tu clase está vacía.</p>
-                <p style="font-size: 13px; margin-top: 6px;">Carga una plantilla pedagógica desde el panel lateral o añade posturas desde el <strong>Asana Lab</strong>.</p>
+                <p style="font-size: 13px; margin-top: 6px;">Carga un estilo desde el panel lateral o añade asanas desde el <strong>Asana Lab</strong>.</p>
               </div>
             ` : FASES_CANONICAS.map(fase => {
               const itemsFase = currentSequence.map((item, idx) => ({ ...item, originalIdx: idx })).filter(item => item.fase === fase.id);
@@ -1364,14 +1361,14 @@
                           <option value="5" ${item.fase === 5 ? 'selected' : ''}>Fase 5 (Cierre)</option>
                         </select>
 
-                        <!-- Control de Duración en Minutos -->
+                        <!-- Control de Minutos -->
                         <div class="duration-control">
                           <button class="btn-step" onclick="changeItemDuration(${item.originalIdx}, -1)">-</button>
                           <span>${item.duracionMin}m</span>
                           <button class="btn-step" onclick="changeItemDuration(${item.originalIdx}, 1)">+</button>
                         </div>
 
-                        <!-- Botones de Reordenación y Eliminar -->
+                        <!-- Acciones -->
                         <div class="seq-item-actions">
                           <button class="seq-btn" onclick="moveSeqItem(${item.originalIdx}, -1)">↑</button>
                           <button class="seq-btn" onclick="moveSeqItem(${item.originalIdx}, 1)">↓</button>
@@ -1390,7 +1387,7 @@
             </div>
           </div>
 
-         <!-- PANEL LATERAL: ASISTENTE DE SECUENCIACIÓN POR ESTILOS -->
+          <!-- PANEL LATERAL: ASISTENTE DE ESTILOS (HATHA, VINYASA, YIN, TERAPÉUTICO) -->
           <div class="sequence-sidebar">
             <h4 style="font-size: 1.05rem; color: var(--teal-soft); margin-bottom: 4px;">Guía de Estilos & Asistente</h4>
             <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 14px;">Selecciona el estilo para ver sus propiedades y cargar su estructura:</p>
@@ -1417,17 +1414,17 @@
         </div>
       `;
     }
-       
+
     window.addToSeq = function(id) {
       const a = PRACTICA_DB.asanas.find(x => x.id === id);
       if (!a) return;
 
-      // Asignar fase por defecto según la naturaleza biomecánica
       let defaultFase = 3;
       if (a.id === 'savasana') defaultFase = 5;
       else if (a.id === 'balasana') defaultFase = 1;
       else if (a.familia === 'restaurativa') defaultFase = 4;
       else if (a.familia === 'flexión') defaultFase = 4;
+      else if (a.familia === 'yin yoga') defaultFase = 3;
 
       currentSequence.push({
         id: a.id,
@@ -1435,7 +1432,7 @@
         espanol: a.espanol,
         familia: a.familia,
         fase: defaultFase,
-        duracionMin: a.id === 'savasana' ? 10 : 3
+        duracionMin: a.id === 'savasana' ? 10 : (a.familia === 'yin yoga' ? 5 : 3)
       });
 
       localStorage.setItem('kinesis_seq', JSON.stringify(currentSequence));
@@ -1499,18 +1496,6 @@
           { id: "paschimottanasana", sanscrito: "Paschimottanasana", espanol: "Flexión Sentada", familia: "flexión", fase: 4, duracionMin: 4 },
           { id: "savasana", sanscrito: "Savasana & Namaste", espanol: "Relajación Final e Integración", familia: "restaurativa", fase: 5, duracionMin: 10 }
         ];
-      } else if (type === 'yin60') {
-        currentSequence = [
-          { id: "yin-mariposa", sanscrito: "La Mariposa (Butterfly)", espanol: "Apertura lumbar y meridianos", familia: "yin yoga", fase: 1, duracionMin: 6 },
-          { id: "yin-dragon", sanscrito: "El Dragón (Dragon Pose)", espanol: "Apertura profunda de psoas (ambos lados)", familia: "yin yoga", fase: 3, duracionMin: 8 },
-          { id: "yin-cisne", sanscrito: "El Cisne Durmiente (Swan)", espanol: "Liberación fascial de cadera", familia: "yin yoga", fase: 3, duracionMin: 8 },
-          { id: "yin-esfinge-foca", sanscrito: "La Esfinge & La Foca", espanol: "Compresión pasiva lumbar", familia: "yin yoga", fase: 3, duracionMin: 6 },
-          { id: "yin-silla-montar", sanscrito: "La Silla de Montar (Saddle)", espanol: "Apertura de cuádriceps y estómago", familia: "yin yoga", fase: 3, duracionMin: 6 },
-          { id: "yin-oruga", sanscrito: "La Oruga (Caterpillar)", espanol: "Tracción pasiva de espalda", familia: "yin yoga", fase: 4, duracionMin: 6 },
-          { id: "yin-bananasana", sanscrito: "Bananasana", espanol: "Apertura de la cadena lateral", familia: "yin yoga", fase: 4, duracionMin: 8 },
-          { id: "yin-torsion-raices", sanscrito: "Torsión de Raíces Caídas", espanol: "Neutralización y calma", familia: "yin yoga", fase: 4, duracionMin: 6 },
-          { id: "savasana", sanscrito: "Savasana Profundo & Rebound Final", espanol: "Rehidratación fascial e integración", familia: "restaurativa", fase: 5, duracionMin: 10 }
-        ];
       } else if (type === 'hatha60') {
         currentSequence = [
           { id: "balasana", sanscrito: "Balasana & Toma de Consciencia", espanol: "Niño", familia: "restaurativa", fase: 1, duracionMin: 5 },
@@ -1524,6 +1509,18 @@
           { id: "janu-sirsasana", sanscrito: "Janu Sirsasana", espanol: "Flexión asimétrica", familia: "flexión", fase: 4, duracionMin: 5 },
           { id: "setu-bandhasana", sanscrito: "Setu Bandhasana", espanol: "Medio Puente", familia: "extensión", fase: 4, duracionMin: 5 },
           { id: "savasana", sanscrito: "Savasana", espanol: "Relajación Completa", familia: "restaurativa", fase: 5, duracionMin: 12 }
+        ];
+      } else if (type === 'yin60') {
+        currentSequence = [
+          { id: "yin-mariposa", sanscrito: "La Mariposa (Butterfly)", espanol: "Apertura lumbar y meridianos", familia: "yin yoga", fase: 1, duracionMin: 6 },
+          { id: "yin-dragon", sanscrito: "El Dragón (Dragon Pose)", espanol: "Apertura profunda de psoas", familia: "yin yoga", fase: 3, duracionMin: 8 },
+          { id: "yin-cisne", sanscrito: "El Cisne Durmiente (Swan)", espanol: "Liberación fascial de cadera", familia: "yin yoga", fase: 3, duracionMin: 8 },
+          { id: "yin-esfinge-foca", sanscrito: "La Esfinge & La Foca", espanol: "Compresión pasiva lumbar", familia: "yin yoga", fase: 3, duracionMin: 6 },
+          { id: "yin-silla-montar", sanscrito: "La Silla de Montar (Saddle)", espanol: "Apertura de cuádriceps y estómago", familia: "yin yoga", fase: 3, duracionMin: 6 },
+          { id: "yin-oruga", sanscrito: "La Oruga (Caterpillar)", espanol: "Tracción pasiva de espalda", familia: "yin yoga", fase: 4, duracionMin: 6 },
+          { id: "yin-bananasana", sanscrito: "Bananasana", espanol: "Apertura de la cadena lateral", familia: "yin yoga", fase: 4, duracionMin: 8 },
+          { id: "yin-torsion-raices", sanscrito: "Torsión de Raíces Caídas", espanol: "Neutralización y calma", familia: "yin yoga", fase: 4, duracionMin: 6 },
+          { id: "savasana", sanscrito: "Savasana Profundo & Rebound Final", espanol: "Rehidratación fascial e integración", familia: "restaurativa", fase: 5, duracionMin: 10 }
         ];
       } else if (type === 'terapeutica60') {
         currentSequence = [
@@ -1667,7 +1664,7 @@
           propiedades: "Frío, meditativo y fascial. Estira el tejido conectivo profundo y estimula meridianos energéticos.",
           permanencia: "3 a 5 minutos por postura con músculos completamente relajados.",
           regla: "Sin saludos al sol ni posturas de pie activas. Integrar 'Rebound' neutro entre asanas.",
-          plantilla: "terapeutica60"
+          plantilla: "yin60"
         },
         terapeutico: {
           titulo: "🩹 Yoga Terapéutico",
@@ -1687,6 +1684,7 @@
         <button class="btn-ctl" style="width: 100%; font-size: 11px; padding: 6px;" onclick="loadTemplate('${s.plantilla}')">Cargar Plantilla de ${s.titulo}</button>
       `;
     };
+
     // Carga segura
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', renderCurrentView);
