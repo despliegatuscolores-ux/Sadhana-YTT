@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Yoga Teacher Training Suite</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&family=Playfair+Display:ital,wght@0,600;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0d1117;
+      --card-bg: #161b22;
+      --border: #30363d;
+      --gold: #d4af37;
+      --gold-light: #f3e5ab;
+      --teal: #2dd4bf;
+      --text: #e6edf3;
+      --text-muted: #8b949e;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: radial-gradient(circle at top, #1c2128 0%, var(--bg) 100%);
+      color: var(--text);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 24px;
+    }
+    .header {
+      text-align: center;
+      max-width: 650px;
+      margin-bottom: 48px;
+    }
+    .badge {
+      display: inline-block;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--gold);
+      border: 1px solid rgba(212, 175, 55, 0.3);
+      padding: 6px 14px;
+      border-radius: 999px;
+      margin-bottom: 16px;
+      background: rgba(212, 175, 55, 0.05);
+    }
+    h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2rem, 5vw, 2.8rem);
+      font-weight: 600;
+      letter-spacing: -0.5px;
+      margin-bottom: 12px;
+      color: #fff;
+    }
+    p.subtitle {
+      color: var(--text-muted);
+      font-size: 1.05rem;
+      line-height: 1.6;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 24px;
+      max-width: 900px;
+      width: 100%;
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      overflow: hidden;
+    }
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 24px -10px rgba(0, 0, 0, 0.5);
+    }
+    .card.filosofia:hover {
+      border-color: var(--gold);
+      box-shadow: 0 12px 28px -10px rgba(212, 175, 55, 0.2);
+    }
+    .card.practica:hover {
+      border-color: var(--teal);
+      box-shadow: 0 12px 28px -10px rgba(45, 212, 191, 0.2);
+    }
+    .card-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+    .filosofia .card-icon {
+      background: rgba(212, 175, 55, 0.1);
+      color: var(--gold);
+      border: 1px solid rgba(212, 175, 55, 0.2);
+    }
+    .practica .card-icon {
+      background: rgba(45, 212, 191, 0.1);
+      color: var(--teal);
+      border: 1px solid rgba(45, 212, 191, 0.2);
+    }
+    .card-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.6rem;
+      margin-bottom: 8px;
+      color: #fff;
+    }
+    .card-desc {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      line-height: 1.5;
+      margin-bottom: 24px;
+    }
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+    .tag {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-muted);
+    }
+    .card-action {
+      display: flex;
+      align-items: center;
+      font-size: 0.9rem;
+      font-weight: 700;
+      gap: 8px;
+      margin-top: auto;
+    }
+    .filosofia .card-action { color: var(--gold); }
+    .practica .card-action { color: var(--teal); }
+    footer {
+      margin-top: 56px;
+      color: #484f58;
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+
+  <header class="header">
+    <div class="badge">Ecosistema YTT 200h / 300h</div>
+    <h1>Plataforma Formativa de Yoga</h1>
+    <p class="subtitle">Herramientas pedagógicas independientes alojadas en GitHub Pages para el estudio integral de la tradición y la práctica técnica.</p>
+  </header>
+
+  <main class="grid">
+    <!-- APP 1 -->
+    <a href="./filosofia/" class="card filosofia">
+      <div>
+        <div class="card-icon">🪷</div>
+        <h2 class="card-title">Darshana</h2>
+        <p class="card-desc">Biblioteca analítica de textos clásicos, historia sagrada, cosmología y filosofía tradicional del yoga.</p>
+        <div class="tags">
+          <span class="tag">Yoga Sutras (4 Padas)</span>
+          <span class="tag">Bhagavad Gita</span>
+          <span class="tag">Vedas & Upanishads</span>
+          <span class="tag">Hatha Pradipika</span>
+          <span class="tag">Genealogía Vinyasa</span>
+        </div>
+      </div>
+      <div class="card-action">Entrar al Estudio Filosófico →</div>
+    </a>
+
+    <!-- APP 2 -->
+    <a href="./practica/" class="card practica">
+      <div>
+        <div class="card-icon">⚡</div>
+        <h2 class="card-title">Kinesis</h2>
+        <p class="card-desc">Laboratorio técnico de asanas, biomecánica funcional, respiración consciente, terapia y secuenciación de clases.</p>
+        <div class="tags">
+          <span class="tag">+80 Asanas Lab</span>
+          <span class="tag">Biomecánica & Cadenas</span>
+          <span class="tag">Pacer Pranayama Audio</span>
+          <span class="tag">Terapia & Patologías</span>
+          <span class="tag">Constructor de Clases</span>
+        </div>
+      </div>
+      <div class="card-action">Entrar al Laboratorio Técnico →</div>
+    </a>
+  </main>
+
+  <footer>
+    100% Client-Side • Sin Dependencias Externas • Alojado en GitHub Pages
+  </footer>
+
+</body>
+</html>
