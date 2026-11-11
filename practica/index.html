@@ -1390,29 +1390,34 @@
             </div>
           </div>
 
-          <!-- PANEL LATERAL DE PLANTILLAS -->
+         <!-- PANEL LATERAL: ASISTENTE DE SECUENCIACIÓN POR ESTILOS -->
           <div class="sequence-sidebar">
-            <h4 style="font-size: 1.05rem; color: var(--teal-soft); margin-bottom: 6px;">Plantillas Canónicas</h4>
-            <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;">Sesiones maestras calibradas en la curva de 60 a 70 minutos:</p>
-            <div style="display: flex; flex-direction: column; gap: 10px;">
-              <button class="pill-btn" onclick="loadTemplate('vinyasa65')" style="text-align: left; border-radius: 8px; font-size: 12px; padding: 10px 14px;">
-                ⚡ Vinyasa Flow Equilibrado (65 min)<br>
-                <span style="font-size: 10px; color: var(--text-muted); font-weight: normal;">Pico en Guerrero III y Chaturanga</span>
+            <h4 style="font-size: 1.05rem; color: var(--teal-soft); margin-bottom: 4px;">Guía de Estilos & Asistente</h4>
+            <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 14px;">Selecciona el estilo para ver sus propiedades y cargar su estructura:</p>
+            
+            <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px;">
+              <button class="pill-btn" onclick="showStyleGuide('hatha')" style="text-align: left; border-radius: 8px; font-size: 12px; padding: 9px 12px;">
+                ☀️ <strong>Hatha Yoga</strong> (Estático & Solar)
               </button>
-              <button class="pill-btn" onclick="loadTemplate('hatha60')" style="text-align: left; border-radius: 8px; font-size: 12px; padding: 10px 14px;">
-                🌲 Hatha Enraizamiento & Pie (60 min)<br>
-                <span style="font-size: 10px; color: var(--text-muted); font-weight: normal;">Pico en Trikonasana y Árbol</span>
+              <button class="pill-btn" onclick="showStyleGuide('vinyasa')" style="text-align: left; border-radius: 8px; font-size: 12px; padding: 9px 12px;">
+                ⚡ <strong>Vinyasa Flow</strong> (Dinámico & Oleadas)
               </button>
-              <button class="pill-btn" onclick="loadTemplate('terapeutica60')" style="text-align: left; border-radius: 8px; font-size: 12px; padding: 10px 14px;">
-                🩹 Espalda & Apertura Pasiva (60 min)<br>
-                <span style="font-size: 10px; color: var(--text-muted); font-weight: normal;">Pico en Paloma con soporte</span>
+              <button class="pill-btn" onclick="showStyleGuide('yin')" style="text-align: left; border-radius: 8px; font-size: 12px; padding: 9px 12px;">
+                🌙 <strong>Yin Yoga</strong> (Fascial & Pasivo)
               </button>
+              <button class="pill-btn" onclick="showStyleGuide('terapeutico')" style="text-align: left; border-radius: 8px; font-size: 12px; padding: 9px 12px;">
+                🩹 <strong>Yoga Terapéutico</strong> (Clínico & Props)
+              </button>
+            </div>
+
+            <div id="styleGuideBox" style="background: var(--bg-surface-elevated); border: 1px solid var(--border); border-radius: 10px; padding: 14px; font-size: 12px; line-height: 1.5; color: var(--text-muted);">
+              <strong style="color: var(--teal-soft);">Consejo Pedagógico:</strong> Haz clic en uno de los 4 botones superiores para ver la fisiología, permanencia y cargar la plantilla recomendada.
             </div>
           </div>
         </div>
       `;
     }
-
+       
     window.addToSeq = function(id) {
       const a = PRACTICA_DB.asanas.find(x => x.id === id);
       if (!a) return;
@@ -1625,6 +1630,51 @@
       `;
     });
 
+    // Asistente de Estilos Pedagógicos
+    window.showStyleGuide = function(style) {
+      const box = document.getElementById('styleGuideBox');
+      if (!box) return;
+
+      const data = {
+        hatha: {
+          titulo: "☀️ Hatha Yoga Clásico",
+          propiedades: "Pausado, estático y equilibrante. Busca balance entre Sol (fuerza) y Luna (calma).",
+          permanencia: "5 a 8 respiraciones conscientes por asana.",
+          regla: "Pausas breves neutras entre posturas. Se evitan transiciones bruscas.",
+          plantilla: "hatha60"
+        },
+        vinyasa: {
+          titulo: "⚡ Vinyasa Flow",
+          propiedades: "Dinámico, fluido y cardiovascular. Estructurado en oleadas hacia una postura cúspide (Peak Pose).",
+          permanencia: "1 respiración por movimiento; pico 5 respiraciones.",
+          regla: "Sincronización continua con respiración Ujjayi y enlaces de Vinyasa.",
+          plantilla: "vinyasa65"
+        },
+        yin: {
+          titulo: "🌙 Yin Yoga",
+          propiedades: "Frío, meditativo y fascial. Estira el tejido conectivo profundo y estimula meridianos energéticos.",
+          permanencia: "3 a 5 minutos por postura con músculos completamente relajados.",
+          regla: "Sin saludos al sol ni posturas de pie activas. Integrar 'Rebound' neutro entre asanas.",
+          plantilla: "terapeutica60"
+        },
+        terapeutico: {
+          titulo: "🩹 Yoga Terapéutico",
+          propiedades: "Adaptativo, clínico y seguro. Prioriza la descompresión articular y la respiración diafragmática.",
+          permanencia: "Variable (1 a 5 min) con soporte completo de accesorios (bloques, pared, mantas).",
+          regla: "Regla del dolor cero (Ahimsa). Prohibido forzar rangos articulares.",
+          plantilla: "terapeutica60"
+        }
+      };
+
+      const s = data[style];
+      box.innerHTML = `
+        <h5 style="color: var(--teal-soft); font-size: 13px; margin-bottom: 6px;">${s.titulo}</h5>
+        <p style="margin-bottom: 6px;"><strong>Propiedades:</strong> ${s.propiedades}</p>
+        <p style="margin-bottom: 6px;"><strong>Permanencia:</strong> ${s.permanencia}</p>
+        <p style="margin-bottom: 10px;"><strong>Clave Pedagógica:</strong> ${s.regla}</p>
+        <button class="btn-ctl" style="width: 100%; font-size: 11px; padding: 6px;" onclick="loadTemplate('${s.plantilla}')">Cargar Plantilla de ${s.titulo}</button>
+      `;
+    };
     // Carga segura
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', renderCurrentView);
